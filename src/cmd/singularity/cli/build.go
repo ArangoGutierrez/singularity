@@ -19,6 +19,7 @@ import (
 
 var (
 	Remote    bool
+	Detached  bool
 	RemoteURL string
 	AuthToken string
 	Sandbox   bool
@@ -38,6 +39,7 @@ func init() {
 	buildCmd.Flags().BoolVarP(&Force, "force", "f", false, "")
 	buildCmd.Flags().BoolVarP(&NoTest, "notest", "T", false, "")
 	buildCmd.Flags().BoolVarP(&Remote, "remote", "r", false, "Build image remotely")
+	buildCmd.Flags().BoolVarP(&Detached, "detached", "r", false, "Close the STDOUT from the remote build")
 	buildCmd.Flags().StringVar(&RemoteURL, "remote-url", "localhost:5050", "Specify the URL of the remote builder")
 	buildCmd.Flags().StringVar(&AuthToken, "auth-token", "", "Specify the auth token for the remote builder")
 }
@@ -82,7 +84,7 @@ var buildCmd = &cobra.Command{
 		}
 
 		if Remote {
-			b = build.NewRemoteBuilder(args[0], def, false, RemoteURL, AuthToken)
+			b = build.NewRemoteBuilder(args[0], def, Detached, RemoteURL, AuthToken)
 		} else {
 			b, err = build.NewSifBuilder(args[0], def)
 			if err != nil {
