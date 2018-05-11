@@ -145,7 +145,7 @@ func (rb *RemoteBuilder) streamOutput(ctx context.Context, url string) (err erro
 		// Print to terminal
 		switch mt {
 		case websocket.TextMessage:
-			fmt.Printf("%s", msg)
+			fmt.Printf("%s\n", msg)
 		case websocket.BinaryMessage:
 			fmt.Print("Ignoring binary message")
 		}
