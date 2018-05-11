@@ -84,7 +84,15 @@ var buildCmd = &cobra.Command{
 		}
 
 		if Remote {
-			b = build.NewRemoteBuilder(args[0], def, Detached, RemoteURL, AuthToken)
+			if Detached {
+				b, err = build.NewBuildAndPush(args[0], def, RemoteURL, AuthToken)
+				if err != nil {
+					sylog.Fatalf("failed to create SifBuilder object: %v\n", err)
+				}
+			} else {
+				b = build.NewRemoteBuilder(args[0], def, Detached, RemoteURL, AuthToken)
+			}
+
 		} else {
 			b, err = build.NewSifBuilder(args[0], def)
 			if err != nil {

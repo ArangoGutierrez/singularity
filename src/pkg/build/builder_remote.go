@@ -27,7 +27,8 @@ import (
 // RequestData contains the info necessary for submitting a build to a remote service
 type RequestData struct {
 	Definition `json:"definition"`
-	IsDetached bool `json:"isDetached"`
+	LibraryRef string `json:"libraryRef"`
+	IsDetached bool   `json:"isDetached"`
 }
 
 // ResponseData contains the details of an individual build
