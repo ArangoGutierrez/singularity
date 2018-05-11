@@ -108,6 +108,7 @@ func (bp *BuildAndPush) doBuildRequest(ctx context.Context) (rd ResponseData, er
 		return
 	}
 
+	err = json.NewDecoder(res.Body).Decode(&rd)
 	return
 }
 
