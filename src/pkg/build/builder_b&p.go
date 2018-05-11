@@ -86,7 +86,7 @@ func (bp *BuildAndPush) doBuildRequest(ctx context.Context) (rd ResponseData, er
 		return
 	}
 
-	url := url.URL{Scheme: "http", Host: bp.HTTPAddr, Path: "/v1/buildandpush"}
+	url := url.URL{Scheme: "http", Host: bp.HTTPAddr, Path: "/v1/build"}
 	req, err := http.NewRequest(http.MethodPost, url.String(), bytes.NewReader(b))
 	if err != nil {
 		return
