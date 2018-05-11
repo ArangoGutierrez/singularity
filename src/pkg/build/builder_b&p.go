@@ -70,7 +70,7 @@ func (bp *BuildAndPush) Build(ctx context.Context) (err error) {
 	}
 
 	fmt.Printf("Build submited with ID: %v\n", rd.ID)
-	fmt.Printf("Built image will be push into: %v\n", rd.libraryRef)
+	fmt.Printf("Built image will be push into: %v\n", bp.LibraryRef)
 
 	return
 }
