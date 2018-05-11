@@ -39,7 +39,7 @@ func init() {
 	buildCmd.Flags().BoolVarP(&Force, "force", "f", false, "")
 	buildCmd.Flags().BoolVarP(&NoTest, "notest", "T", false, "")
 	buildCmd.Flags().BoolVarP(&Remote, "remote", "r", false, "Build image remotely")
-	buildCmd.Flags().BoolVarP(&Detached, "detached", "r", false, "Close the STDOUT from the remote build")
+	buildCmd.Flags().BoolVarP(&Detached, "detached", "d", false, "Close the STDOUT from the remote build")
 	buildCmd.Flags().StringVar(&RemoteURL, "remote-url", "localhost:5050", "Specify the URL of the remote builder")
 	buildCmd.Flags().StringVar(&AuthToken, "auth-token", "", "Specify the auth token for the remote builder")
 }
