@@ -41,7 +41,7 @@ func NewBuildAndPush(libraryRef string, d Definition, httpAddr, authToken string
 		Client: http.Client{
 			Timeout: 30 * time.Second,
 		},
-		LibraryRef: imaglibraryRefePath,
+		LibraryRef: libraryRef,
 		Definition: d,
 		HTTPAddr:   httpAddr,
 	}
@@ -114,17 +114,17 @@ func (bp *BuildAndPush) doBuildRequest(ctx context.Context) (rd ResponseData, er
 
 // doStatusRequest gets the status of a build from the Remote Build Service
 func (bp *BuildAndPush) doStatusRequest(ctx context.Context, id bson.ObjectId) (rd ResponseData, err error) {
-	url := url.URL{Scheme: "http", Host: rb.HTTPAddr, Path: "/v1/build/" + id.Hex()}
+	url := url.URL{Scheme: "http", Host: bp.HTTPAddr, Path: "/v1/build/" + id.Hex()}
 	req, err := http.NewRequest(http.MethodGet, url.String(), nil)
 	if err != nil {
 		return
 	}
 	req = req.WithContext(ctx)
-	if rb.AuthHeader != "" {
+	if bp.AuthHeader != "" {
 		req.Header.Set("Authorization", rb.AuthHeader)
 	}
 
-	res, err := rb.Client.Do(req)
+	res, err := bp.Client.Do(req)
 	if err != nil {
 		return
 	}
