@@ -121,7 +121,7 @@ func (bp *BuildAndPush) doStatusRequest(ctx context.Context, id bson.ObjectId) (
 	}
 	req = req.WithContext(ctx)
 	if bp.AuthHeader != "" {
-		req.Header.Set("Authorization", rb.AuthHeader)
+		req.Header.Set("Authorization", bp.AuthHeader)
 	}
 
 	res, err := bp.Client.Do(req)
