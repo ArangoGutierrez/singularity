@@ -34,7 +34,7 @@ type BuildAndPush struct {
 // NewBuildAndPush creates a RemoteBuilder with the specified details.
 func NewBuildAndPush(libraryRef string, d Definition, httpAddr, authToken string) (bp *BuildAndPush, err error) {
 	if !isLibraryPushRef(libraryRef) {
-		return BuildAndPush{}, fmt.Errorf("Not a valid library reference: %s", libraryRef)
+		return &BuildAndPush{}, fmt.Errorf("Not a valid library reference: %s", libraryRef)
 	}
 
 	bp = &BuildAndPush{
