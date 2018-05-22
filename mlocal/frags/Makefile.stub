@@ -34,7 +34,7 @@ go_BIN := $(singularity) $(sbuild)
 go_OBJ := $(SOURCEDIR)/src/pkg/buildcfg/config.go
 go_INSTALL := $(singularity_INSTALL) $(sbuild_INSTALL)
 
-go_TAG = "containers_image_openpgp"
+go_TAG = "containers_image_openpgp singularity_sif"
 
 cgo_CPPFLAGS = -I$(BUILDDIR) -I$(SOURCEDIR)/src/runtime/c -I$(SOURCEDIR)/src/runtime/c/lib
 cgo_LDFLAGS = -L`readlink -f $(BUILDDIR)`/lib
