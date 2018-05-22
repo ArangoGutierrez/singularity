@@ -8,6 +8,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -15,9 +16,72 @@ import (
 	"text/template"
 )
 
-func parseLine(s string) (d Define) {
+func init() {
+	if err := removeLines("config_gen.go", 12, 54); err != nil {
+		fmt.Println(err)
+	}
+
+}
+func removeLines(fn string, start, n int) (err error) {
+	if start < 1 {
+		return errors.New("invalid request.  line numbers start at 1")
+	}
+	if n < 0 {
+		return errors.New("invalid request.  negative number to remove")
+	}
+	var f *os.File
+	if f, err = os.OpenFile(fn, os.O_RDWR, 0); err != nil {
+		return
+	}
+	defer func() {
+		if cErr := f.Close(); err == nil {
+			err = cErr
+		}
+	}()
+	var b []byte
+	if b, err = ioutil.ReadAll(f); err != nil {
+		return
+	}
+	cut, ok := skip(b, start-1)
+	if !ok {
+		return fmt.Errorf("less than %d lines", start)
+	}
+	if n == 0 {
+		return nil
+	}
+	tail, ok := skip(cut, n)
+	if !ok {
+		return fmt.Errorf("less than %d lines after line %d", n, start)
+	}
+	t := int64(len(b) - len(cut))
+	if err = f.Truncate(t); err != nil {
+		return
+	}
+	if len(tail) > 0 {
+		_, err = f.WriteAt(tail, t)
+	}
+	return
+}
+
+func skip(b []byte, n int) ([]byte, bool) {
+	for ; n > 0; n-- {
+		if len(b) == 0 {
+			return nil, false
+		}
+		x := bytes.IndexByte(b, '\n')
+		if x < 0 {
+			x = len(b)
+		} else {
+			x++
+		}
+		b = b[x:]
+	}
+	return b, true
+}
+
+func ParseLine(s string) (d Define) {
 	d = Define{
-		Words: strings.Fields(s),
+		words: strings.Fields(s),
 	}
 
 	return
@@ -25,17 +89,17 @@ func parseLine(s string) (d Define) {
 
 // Define is a struct that contains one line of configuration words.
 type Define struct {
-	Words []string
+	words []string
 }
 
 // WriteLine writes a line of configuration.
 func (d Define) WriteLine() (s string) {
-	s = "const " + d.Words[1] + " = " + d.Words[2]
-
-	if len(d.Words) > 3 {
+	s = "const " + d.words[1] + " = " + d.words[2]
+	fmt.Println(s)
+	if len(d.words) > 3 {
 	}
 
-	for _, w := range d.Words[3:] {
+	for _, w := range d.words[3:] {
 		s += " + " + w
 	}
 	return s
