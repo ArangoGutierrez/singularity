@@ -5,7 +5,7 @@
 
 package buildcfg
 
-//go:generate go run confgen/gen.go "example.h"
+//go:generate go run confgen/gen.go "${BUILDDIR}/config.h"
 
 var (
 	// PREFIX install dir prefix
