@@ -78,8 +78,8 @@ $(wrapper): $(wrapper_OBJ) $(libstartup)
 $(singularity): $(go_OBJ) $(libruntime) $(singularity_OBJ)
 	@echo " GO" $@
 	$(V)export CGO_CPPFLAGS="$(cgo_CPPFLAGS)" CGO_LDFLAGS="$(cgo_LDFLAGS)" && \
-		go build --tags "$(go_TAG)" -o $(BUILDDIR)/singularity $(SOURCEDIR)/src/cmd/singularity/cli.go
-$(singularity_INSTALL): $(singularity)
+		go build -tags=""$(go_TAG)"" -o $(BUILDDIR)/singularity $(SOURCEDIR)/src/cmd/singularity/cli.go
+$(singularity_INSTALL): $(singularity) $(librpc_INSTALL)
 	@echo " INSTALL" $@
 	$(V)install -d $(@D)
 	$(V)install -m 0755 $(singularity) $(singularity_INSTALL) # set cp to install
