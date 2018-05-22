@@ -1,4 +1,4 @@
-// +build !singularity_sif
+// +build singularity_sif
 
 /*
   Copyright (c) 2018, Sylabs, Inc. All rights reserved.
