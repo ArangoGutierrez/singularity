@@ -129,7 +129,7 @@ func main() {
 	header := []Define{}
 	s := bufio.NewScanner(bytes.NewReader(inFile))
 	for s.Scan() {
-		header = append(header, parseLine(s.Text()))
+		header = append(header, ParseLine(s.Text()))
 	}
 
 	confgenTemplate.Execute(outFile, header)
