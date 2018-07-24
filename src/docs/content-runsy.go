@@ -53,4 +53,11 @@ $ runsy help <command>
 	RunsySpecInspectShort string = `seek into a SIF bundle for OCI runtime specs`
 	RunsySpecInspectLong  string = `
 	seek into a SIF bundle for OCI runtime specs, if found, prints the OCI runtime spec into stoud`
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// Runsy - Create
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	RunsyCreateUse   string = `create [options...] <container-id>`
+	RunsyCreateShort string = `create a container`
+	RunsyCreateLong  string = `
+	Creates a container without running the process defined in the config.json`
 )
