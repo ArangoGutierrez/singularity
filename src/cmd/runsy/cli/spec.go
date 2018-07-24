@@ -36,7 +36,7 @@ func init() {
 	SpecCmd.AddCommand(SpecInspectCmd)
 }
 
-// SpecCmd runs spec cmd
+// SpecCmd RunSy spec cmd
 var SpecCmd = &cobra.Command{
 	Args: cobra.MinimumNArgs(1),
 	Run:  nil,
