@@ -89,7 +89,7 @@ func (e *EngineConfig) MarshalJSON() ([]byte, error) {
 	return json.Marshal(e.JSON)
 }
 
-// UnmarshalJSON is for json.Marshaler
+// UnmarshalJSON is for json.Unmarshaler
 func (e *EngineConfig) UnmarshalJSON(b []byte) error {
 	return json.Unmarshal(b, e.JSON)
 }
