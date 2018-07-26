@@ -38,8 +38,7 @@ func LoadConfigSpec(Path string) (spec *specs.Spec, err error) {
 		sylog.Fatalf("%s", err)
 	}
 	if match != 1 && d.GetName() != ConfigSpec {
-		sylog.Infof("SIF bundle doesn't contains a OCI runtime spec")
-		return
+		return nil, fmt.Errorf("SIF bundle doesn't contains a OCI runtime spec")
 	}
 
 	// if found, retrieve the OCI spec from file
