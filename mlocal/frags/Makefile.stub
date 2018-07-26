@@ -43,9 +43,9 @@ abs_BUILDDIR := `readlink -f $(BUILDDIR)`
 cgo_CPPFLAGS = -I$(BUILDDIR) -I$(SOURCEDIR)/src/runtime -I$(SOURCEDIR)/src/runtime/c/lib -include $(abs_BUILDDIR)/config.h
 cgo_LDFLAGS = -L$(abs_BUILDDIR)/lib -L$(BUILDDIR) -lruntime
 
-INSTALLFILES := $(singularity_INSTALL) $(wrapper_INSTALL) $(wrapper_suid_INSTALL) $(sessiondir) $(config_INSTALL)
+INSTALLFILES := $(singularity_INSTALL) $(wrapper_INSTALL) $(wrapper_suid_INSTALL) $(sessiondir) $(config_INSTALL) $(runsy_INSTALL)
 
-CLEANFILES += $(libruntime) $(libstartup) $(wrapper) $(singularity) $(wrapper_OBJ) $(go_BIN) $(go_OBJ)
+CLEANFILES += $(libruntime) $(libstartup) $(wrapper) $(singularity) $(runsy) $(wrapper_OBJ) $(go_BIN) $(go_OBJ)
 
 all: cscope collect $(libruntime) $(go_BIN) $(config) $(wrapper) $(runsy)
 
