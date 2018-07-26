@@ -121,7 +121,7 @@ func init() {
 	// register imgbuild engine
 	registerEngineOperations(&imgbuild.EngineOperations{EngineConfig: &imgbuild.EngineConfig{}}, imgbuild.Name)
 	// register oci engine
-	registerEngineOperations(&oci.EngineOperations{EngineConfig: &oci.EngineConfig{}}, oci.Name)
+	registerEngineOperations(&oci.EngineOperations{EngineConfig: &oci.EngineConfig{JSON: &oci.JSONConfig{}}}, oci.Name)
 
 	registeredEngineRPCMethods = make(map[string]interface{})
 

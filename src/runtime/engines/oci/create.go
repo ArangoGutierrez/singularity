@@ -15,6 +15,8 @@ import (
 	"strings"
 	"syscall"
 
+	specs "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/opencontainers/runtime-tools/generate"
 	"github.com/singularityware/singularity/src/pkg/buildcfg"
 	"github.com/singularityware/singularity/src/pkg/image"
 	"github.com/singularityware/singularity/src/pkg/sylog"
@@ -22,8 +24,6 @@ import (
 	"github.com/singularityware/singularity/src/pkg/util/loop"
 	"github.com/singularityware/singularity/src/runtime/engines/singularity/rpc/client"
 	"github.com/sylabs/sif/pkg/sif"
-
-	"github.com/opencontainers/runtime-spec/specs-go"
 )
 
 // CreateContainer creates a container
@@ -56,7 +56,7 @@ func (engine *EngineOperations) CreateContainer(pid int, rpcConn net.Conn) error
 		return err
 	}
 
-	// create config and state files for container monitoring
+	//create config and state files for container monitoring
 	uid := syscall.Geteuid()
 	syscall.Setresuid(uid, 0, uid)
 
@@ -71,18 +71,15 @@ func (engine *EngineOperations) CreateContainer(pid int, rpcConn net.Conn) error
 	configPath := fmt.Sprintf("%s/config.json", sPath)
 	statePath := fmt.Sprintf("%s/state.json", sPath)
 
-	specJSON, err := json.Marshal(engine.CommonConfig.OciConfig.Spec)
-	if err != nil {
-		return err
-	}
-	ioutil.WriteFile(configPath, specJSON, 0644)
+	exportOptions := generate.ExportOptions{Seccomp: false}
+	engine.CommonConfig.OciConfig.Generator.SaveToFile(configPath, exportOptions)
 
 	state := &specs.State{
 		Version: engine.CommonConfig.OciConfig.Spec.Version,
 		ID:      engine.CommonConfig.ContainerID,
 		Status:  "created",
 		Pid:     pid,
-		Bundle:  engine.EngineConfig.Image,
+		Bundle:  engine.EngineConfig.JSON.Image,
 	}
 	stateJSON, err := json.Marshal(state)
 	if err != nil {
@@ -117,7 +114,7 @@ func (engine *EngineOperations) CreateContainer(pid int, rpcConn net.Conn) error
 
 func (engine *EngineOperations) addRootfs(p *mount.Points) error {
 	var flags uintptr = syscall.MS_NOSUID | syscall.MS_RDONLY | syscall.MS_NODEV
-	rootfs := engine.EngineConfig.Image
+	rootfs := engine.EngineConfig.JSON.Image
 
 	imageObject, err := image.Init(rootfs, false)
 	if err != nil {

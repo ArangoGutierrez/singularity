@@ -55,10 +55,9 @@ var CreateCmd = &cobra.Command{
 
 		wrapper := buildcfg.SBINDIR + "/wrapper"
 
-		engineConfig := &oci.EngineConfig{
-			Image:      sifPath,
-			IsInstance: true,
-		}
+		engineConfig := &oci.EngineConfig{JSON: &oci.JSONConfig{}}
+		engineConfig.SetImage(sifPath)
+		engineConfig.SetInstance(true)
 
 		// read OCI runtime spec on SIF bundle
 		spec, err := util.LoadConfigSpec(sifPath)
@@ -68,7 +67,6 @@ var CreateCmd = &cobra.Command{
 
 		ociConfig := &common.Config{Spec: *spec}
 		ociConfig.Generator = generate.NewFromSpec(&ociConfig.Spec)
-		ociConfig.Generator.SetProcessArgs(spec.Process.Args)
 
 		Env := []string{"SINGULARITY_MESSAGELEVEL=" + lvl, "SRUNTIME=singularity"}
 		progname := "Sylabs oci runtime"

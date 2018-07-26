@@ -42,10 +42,10 @@ func (e *EngineOperations) PrepareConfig(masterConn net.Conn) error {
 
 // IsRunAsInstance returns true if the runtime engine was run as an instance
 func (e *EngineOperations) IsRunAsInstance() bool {
-	return e.EngineConfig.IsInstance
+	return e.EngineConfig.JSON.IsInstance
 }
 
 // IsAllowSUID always returns true to allow SUID workflow
 func (e *EngineOperations) IsAllowSUID() bool {
-	return e.EngineConfig.AllowSUID
+	return e.EngineConfig.JSON.AllowSUID
 }
