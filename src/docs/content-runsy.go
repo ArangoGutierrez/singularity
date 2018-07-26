@@ -56,7 +56,7 @@ $ runsy help <command>
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// Runsy - Create
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	RunsyCreateUse   string = `create [options...] <container-id>`
+	RunsyCreateUse   string = `create [options...] <container-id> </path/to/SIF>`
 	RunsyCreateShort string = `create a container`
 	RunsyCreateLong  string = `
 	Creates a container without running the process defined in the config.json`
