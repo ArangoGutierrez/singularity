@@ -14,6 +14,7 @@ import (
 
 	"github.com/singularityware/singularity/src/runtime/engines/common/config"
 	"github.com/singularityware/singularity/src/runtime/engines/imgbuild"
+	"github.com/singularityware/singularity/src/runtime/engines/oci"
 	"github.com/singularityware/singularity/src/runtime/engines/singularity"
 	singularityRpcServer "github.com/singularityware/singularity/src/runtime/engines/singularity/rpc/server"
 )
@@ -119,6 +120,8 @@ func init() {
 	registerEngineOperations(&singularity.EngineOperations{EngineConfig: singularity.NewConfig()}, singularity.Name)
 	// register imgbuild engine
 	registerEngineOperations(&imgbuild.EngineOperations{EngineConfig: &imgbuild.EngineConfig{}}, imgbuild.Name)
+	// register oci engine
+	registerEngineOperations(&oci.EngineOperations{EngineConfig: &oci.EngineConfig{}}, oci.Name)
 
 	registeredEngineRPCMethods = make(map[string]interface{})
 
@@ -126,4 +129,5 @@ func init() {
 	methods := new(singularityRpcServer.Methods)
 	registerEngineRPCMethods(methods, singularity.Name)
 	registerEngineRPCMethods(methods, imgbuild.Name)
+	registerEngineRPCMethods(methods, oci.Name)
 }
