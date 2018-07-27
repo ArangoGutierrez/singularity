@@ -20,103 +20,153 @@ import (
 	"github.com/singularityware/singularity/src/pkg/buildcfg"
 	"github.com/singularityware/singularity/src/pkg/image"
 	"github.com/singularityware/singularity/src/pkg/sylog"
+	"github.com/singularityware/singularity/src/pkg/util/fs/layout"
+	"github.com/singularityware/singularity/src/pkg/util/fs/layout/layer/overlay"
 	"github.com/singularityware/singularity/src/pkg/util/fs/mount"
 	"github.com/singularityware/singularity/src/pkg/util/loop"
 	"github.com/singularityware/singularity/src/runtime/engines/singularity/rpc/client"
 	"github.com/sylabs/sif/pkg/sif"
 )
 
-// CreateContainer creates a container
-func (engine *EngineOperations) CreateContainer(pid int, rpcConn net.Conn) error {
-	//WIP--->
-	//
-	if engine.CommonConfig.EngineName != Name {
-		return fmt.Errorf("engineName configuration doesn't match runtime name")
-	}
-	// rpc init
-	rpcOps := &client.RPC{
-		Client: rpc.NewClient(rpcConn),
-		Name:   engine.CommonConfig.EngineName,
-	}
-	if rpcOps.Client == nil {
-		return fmt.Errorf("failed to initialiaze RPC client")
-	}
+var session *layout.Session
+var rpcOps *client.RPC
 
-	// Mount
-	sylog.Debugf("initialize mount points\n")
-	p := &mount.Points{}
-	if err := p.ImportFromSpec(engine.CommonConfig.OciConfig.Spec.Mounts); err != nil {
-		return err
-	}
-	if err := engine.addRootfs(p); err != nil {
-		return err
-	}
-
-	if err := mountAll(rpcOps, p); err != nil {
-		return err
-	}
-
-	//create config and state files for container monitoring
-	uid := syscall.Geteuid()
-	syscall.Setresuid(uid, 0, uid)
-
-	sPath := fmt.Sprintf("%s/%s", StatePath, engine.CommonConfig.ContainerID)
-	sylog.Debugf("writing state files into %s", sPath)
-	if _, err := os.Stat(sPath); os.IsNotExist(err) {
-		sylog.Debugf("%s doesn't exist...creating", sPath)
-		if err := os.Mkdir(sPath, 0644); err != nil {
-			return err
+func (engine *EngineOperations) localMount(point *mount.Point) error {
+	if _, err := mount.GetOffset(point.InternalOptions); err == nil {
+		if err := engine.mountImage(point); err != nil {
+			return fmt.Errorf("can't mount image %s: %s", point.Source, err)
+		}
+	} else {
+		if err := engine.mountGeneric(point, true); err != nil {
+			flags, _ := mount.ConvertOptions(point.Options)
+			if flags&syscall.MS_REMOUNT != 0 {
+				return fmt.Errorf("can't remount %s: %s", point.Destination, err)
+			}
+			sylog.Verbosef("can't mount %s: %s", point.Source, err)
+			return nil
 		}
 	}
-	configPath := fmt.Sprintf("%s/config.json", sPath)
-	statePath := fmt.Sprintf("%s/state.json", sPath)
+	return nil
+}
 
-	exportOptions := generate.ExportOptions{Seccomp: false}
-	engine.CommonConfig.OciConfig.Generator.SaveToFile(configPath, exportOptions)
-
-	state := &specs.State{
-		Version: engine.CommonConfig.OciConfig.Spec.Version,
-		ID:      engine.CommonConfig.ContainerID,
-		Status:  "created",
-		Pid:     pid,
-		Bundle:  engine.EngineConfig.JSON.Image,
+func (engine *EngineOperations) rpcMount(point *mount.Point) error {
+	if err := engine.mountGeneric(point, false); err != nil {
+		flags, _ := mount.ConvertOptions(point.Options)
+		if flags&syscall.MS_REMOUNT != 0 {
+			return fmt.Errorf("can't remount %s: %s", point.Destination, err)
+		}
+		sylog.Verbosef("can't mount %s: %s", point.Source, err)
+		return nil
 	}
-	stateJSON, err := json.Marshal(state)
+	return nil
+}
+
+func (engine *EngineOperations) switchMount(system *mount.System) error {
+	system.Mount = engine.rpcMount
+	return nil
+}
+
+// mount any generic mount (not loop dev)
+func (engine *EngineOperations) mountGeneric(mnt *mount.Point, local bool) (err error) {
+	flags, opts := mount.ConvertOptions(mnt.Options)
+	optsString := strings.Join(opts, ",")
+	sessionPath := session.Path()
+	remount := false
+
+	if flags&syscall.MS_REMOUNT != 0 {
+		remount = true
+	}
+
+	if flags&syscall.MS_BIND != 0 && !remount {
+		if _, err := os.Stat(mnt.Source); os.IsNotExist(err) {
+			sylog.Debugf("Skipping mount, host source %s doesn't exist", mnt.Source)
+			return nil
+		}
+	}
+
+	dest := ""
+	if !strings.HasPrefix(mnt.Destination, sessionPath) {
+		dest = session.FinalPath() + mnt.Destination
+		if _, err := os.Stat(dest); os.IsNotExist(err) {
+			sylog.Debugf("Skipping mount, %s doesn't exist in container", dest)
+			return nil
+		}
+	} else {
+		dest = mnt.Destination
+		if _, err := os.Stat(dest); os.IsNotExist(err) {
+			return fmt.Errorf("destination %s doesn't exist", dest)
+		}
+	}
+
+	if remount {
+		sylog.Debugf("Remounting %s\n", dest)
+	} else {
+		sylog.Debugf("Mounting %s to %s\n", mnt.Source, dest)
+	}
+	if !local {
+		_, err = rpcOps.Mount(mnt.Source, dest, mnt.Type, flags, optsString)
+	} else {
+		err = syscall.Mount(mnt.Source, dest, mnt.Type, flags, optsString)
+	}
+	return err
+}
+
+// mount image via loop
+func (engine *EngineOperations) mountImage(mnt *mount.Point) error {
+	flags, opts := mount.ConvertOptions(mnt.Options)
+	optsString := strings.Join(opts, ",")
+
+	offset, err := mount.GetOffset(mnt.InternalOptions)
 	if err != nil {
 		return err
 	}
-	ioutil.WriteFile(statePath, stateJSON, 0644)
 
-	syscall.Setresuid(uid, uid, 0)
-
-	sylog.Debugf("Chdir into %s\n", buildcfg.SESSIONDIR)
-	err = syscall.Chdir(buildcfg.SESSIONDIR)
+	sizelimit, err := mount.GetSizeLimit(mnt.InternalOptions)
 	if err != nil {
-		return fmt.Errorf("change directory failed: %s", err)
+		return err
 	}
 
-	sylog.Debugf("Chroot into %s\n", buildcfg.SESSIONDIR)
-	_, err = rpcOps.Chroot(buildcfg.SESSIONDIR)
-	if err != nil {
-		return fmt.Errorf("chroot failed: %s", err)
+	attachFlag := os.O_RDWR
+	loopFlags := uint32(loop.FlagsAutoClear)
+
+	if flags&syscall.MS_RDONLY == 1 {
+		loopFlags |= loop.FlagsReadOnly
+		attachFlag = os.O_RDONLY
 	}
 
-	sylog.Debugf("Chdir into / to avoid errors\n")
-	err = syscall.Chdir("/")
+	info := &loop.Info64{
+		Offset:    offset,
+		SizeLimit: sizelimit,
+		Flags:     loopFlags,
+	}
+
+	loopdev := new(loop.Device)
+
+	number := 0
+
+	if err := loopdev.Attach(mnt.Source, attachFlag, &number); err != nil {
+		return err
+	}
+	if err := loopdev.SetStatus(info); err != nil {
+		return err
+	}
+
+	path := fmt.Sprintf("/dev/loop%d", number)
+	sylog.Debugf("Mounting loop device %s to %s\n", path, mnt.Destination)
+	err = syscall.Mount(path, mnt.Destination, mnt.Type, flags, optsString)
 	if err != nil {
-		return fmt.Errorf("change directory failed: %s", err)
+		return fmt.Errorf("failed to mount %s filesystem: %s", mnt.Type, err)
 	}
 
 	return nil
-	//
-	//<---
 }
 
-func (engine *EngineOperations) addRootfs(p *mount.Points) error {
-	var flags uintptr = syscall.MS_NOSUID | syscall.MS_RDONLY | syscall.MS_NODEV
+func (engine *EngineOperations) addRootfsMount(system *mount.System) error {
+	flags := uintptr(syscall.MS_NOSUID | syscall.MS_NODEV)
 	rootfs := engine.EngineConfig.JSON.Image
+	writable := false
 
-	imageObject, err := image.Init(rootfs, false)
+	imageObject, err := image.Init(rootfs, writable)
 	if err != nil {
 		return err
 	}
@@ -152,6 +202,9 @@ func (engine *EngineOperations) addRootfs(p *mount.Points) error {
 			return err
 		}
 		if fstype == sif.FsSquash {
+			if writable {
+				return fmt.Errorf("can't set writable flag with squashfs image")
+			}
 			mountType = "squashfs"
 		} else if fstype == sif.FsExt3 {
 			mountType = "ext3"
@@ -161,79 +214,118 @@ func (engine *EngineOperations) addRootfs(p *mount.Points) error {
 
 		imageObject.Offset = uint64(part.Fileoff)
 		imageObject.Size = uint64(part.Filelen)
-	case image.SQUASHFS:
-		mountType = "squashfs"
-	case image.EXT3:
-		mountType = "ext3"
-	case image.SANDBOX:
-		sylog.Debugf("Mounting directory rootfs: %v\n", rootfs)
-		return p.AddBind(mount.RootfsTag, rootfs, buildcfg.CONTAINER_FINALDIR, syscall.MS_BIND|flags)
 	}
 
+	src := fmt.Sprintf("/proc/self/fd/%d", imageObject.File.Fd())
 	sylog.Debugf("Mounting block [%v] image: %v\n", mountType, rootfs)
-	return p.AddImage(mount.RootfsTag, rootfs, buildcfg.CONTAINER_FINALDIR, mountType, flags, imageObject.Offset, imageObject.Size)
+	return system.Points.AddImage(mount.RootfsTag, src, session.RootFsPath(), mountType, flags, imageObject.Offset, imageObject.Size)
 }
 
-func mountAll(rpcOps *client.RPC, p *mount.Points) error {
-	for _, tag := range mount.GetTagList() {
-		for _, point := range p.GetByTag(tag) {
-			if _, err := mount.GetOffset(point.InternalOptions); err == nil {
-				if err := mountImage(rpcOps, &point); err != nil {
-					return err
-				}
-			} else {
-				if err := mountGeneric(rpcOps, &point); err != nil {
-					return err
-				}
-			}
+func (engine *EngineOperations) createEtc(system *mount.System) error {
+	ov := session.Layer.(*overlay.Overlay)
+	return ov.AddDir("/etc")
+}
+
+// CreateContainer creates a container
+func (engine *EngineOperations) CreateContainer(pid int, rpcConn net.Conn) error {
+	//WIP--->
+	//
+	var err error
+
+	if engine.CommonConfig.EngineName != Name {
+		return fmt.Errorf("engineName configuration doesn't match runtime name")
+	}
+	// rpc init
+	rpcOps = &client.RPC{
+		Client: rpc.NewClient(rpcConn),
+		Name:   engine.CommonConfig.EngineName,
+	}
+	if rpcOps.Client == nil {
+		return fmt.Errorf("failed to initialiaze RPC client")
+	}
+
+	// Mount
+	sylog.Debugf("initialize mount points\n")
+	p := &mount.Points{}
+	system := &mount.System{Points: p, Mount: engine.localMount}
+
+	session, err = layout.NewSession(buildcfg.SESSIONDIR, "tmpfs", 4, system, overlay.New())
+	if err != nil {
+		return err
+	}
+
+	if err := system.RunAfterTag(mount.LayerTag, engine.createEtc); err != nil {
+		return err
+	}
+
+	if err := system.RunAfterTag(mount.LayerTag, engine.switchMount); err != nil {
+		return err
+	}
+
+	if err := p.ImportFromSpec(engine.CommonConfig.OciConfig.Spec.Mounts); err != nil {
+		return err
+	}
+
+	if err := engine.addRootfsMount(system); err != nil {
+		return err
+	}
+
+	if err := system.MountAll(); err != nil {
+		return err
+	}
+
+	//create config and state files for container monitoring
+	uid := syscall.Geteuid()
+	syscall.Setresuid(uid, 0, uid)
+
+	sPath := fmt.Sprintf("%s/%s", StatePath, engine.CommonConfig.ContainerID)
+	sylog.Debugf("writing state files into %s", sPath)
+	if _, err := os.Stat(sPath); os.IsNotExist(err) {
+		sylog.Debugf("%s doesn't exist...creating", sPath)
+		if err := os.MkdirAll(sPath, 0755); err != nil {
+			return err
 		}
 	}
-	return nil
-}
+	configPath := fmt.Sprintf("%s/config.json", sPath)
+	statePath := fmt.Sprintf("%s/state.json", sPath)
 
-// mount any generic mount (not loop dev)
-func mountGeneric(rpcOps *client.RPC, mnt *mount.Point) error {
-	flags, opts := mount.ConvertOptions(mnt.Options)
-	optsString := strings.Join(opts, ",")
+	exportOptions := generate.ExportOptions{Seccomp: false}
+	engine.CommonConfig.OciConfig.Generator.SaveToFile(configPath, exportOptions)
 
-	sylog.Debugf("Mounting %s to %s\n", mnt.Source, mnt.Destination)
-	_, err := rpcOps.Mount(mnt.Source, mnt.Destination, mnt.Type, flags, optsString)
-	return err
-}
-
-// mount image via loop
-func mountImage(rpcOps *client.RPC, mnt *mount.Point) error {
-	flags, opts := mount.ConvertOptions(mnt.Options)
-	optsString := strings.Join(opts, ",")
-
-	offset, err := mount.GetOffset(mnt.InternalOptions)
+	state := &specs.State{
+		Version: engine.CommonConfig.OciConfig.Spec.Version,
+		ID:      engine.CommonConfig.ContainerID,
+		Status:  "created",
+		Pid:     pid,
+		Bundle:  engine.EngineConfig.JSON.Image,
+	}
+	stateJSON, err := json.Marshal(state)
 	if err != nil {
 		return err
 	}
+	ioutil.WriteFile(statePath, stateJSON, 0644)
 
-	sizelimit, err := mount.GetSizeLimit(mnt.InternalOptions)
+	syscall.Setresuid(uid, uid, 0)
+
+	sylog.Debugf("Chdir into %s\n", session.FinalPath())
+	err = syscall.Chdir(session.FinalPath())
 	if err != nil {
-		return err
+		return fmt.Errorf("change directory failed: %s", err)
 	}
 
-	info := &loop.Info64{
-		Offset:    offset,
-		SizeLimit: sizelimit,
-		Flags:     loop.FlagsAutoClear,
+	sylog.Debugf("Chroot into %s\n", session.FinalPath())
+	_, err = rpcOps.Chroot(session.FinalPath())
+	if err != nil {
+		return fmt.Errorf("chroot failed: %s", err)
 	}
 
-	sylog.Debugf("Mounting %v to loop device from %v - %v\n", mnt.Source, offset, sizelimit)
-	number, err := rpcOps.LoopDevice(mnt.Source, os.O_RDONLY, *info)
+	sylog.Debugf("Chdir into / to avoid errors\n")
+	err = syscall.Chdir("/")
 	if err != nil {
-		return err
-	}
-
-	path := fmt.Sprintf("/dev/loop%d", number)
-	sylog.Debugf("Mounting loop device %s to %s\n", path, mnt.Destination)
-	_, err = rpcOps.Mount(path, mnt.Destination, mnt.Type, flags, optsString)
-	if err != nil {
-		return fmt.Errorf("failed to mount %s filesystem: %s", mnt.Type, err)
+		return fmt.Errorf("change directory failed: %s", err)
 	}
 
 	return nil
+	//
+	//<---
 }

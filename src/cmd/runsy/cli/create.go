@@ -68,7 +68,7 @@ var CreateCmd = &cobra.Command{
 		ociConfig := &common.Config{Spec: *spec}
 		ociConfig.Generator = generate.NewFromSpec(&ociConfig.Spec)
 
-		Env := []string{"SINGULARITY_MESSAGELEVEL=" + lvl, "SRUNTIME=singularity"}
+		Env := []string{"SINGULARITY_MESSAGELEVEL=" + lvl, "SRUNTIME=oci"}
 		progname := "Sylabs oci runtime"
 
 		cfg := &config.Common{
