@@ -15,8 +15,8 @@ import (
 
 // StartProcess starts the process
 func (engine *EngineOperations) StartProcess(masterConn net.Conn) error {
-	// move to the container rootfs /
-	os.Chdir("/")
+	// chdir to the cwd specified by the user
+	os.Chdir(engine.CommonConfig.OciConfig.Process.Cwd)
 
 	args := engine.CommonConfig.OciConfig.Process.Args
 	env := engine.CommonConfig.OciConfig.Process.Env
