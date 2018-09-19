@@ -95,7 +95,7 @@ func replaceURIWithImage(cmd *cobra.Command, args []string) {
 	if len(split) > 2 {
 		ociRef = split[1] + ":" + split[2]
 	} else {
-		ociRef = split[1]
+		ociRef = split[1] + ":latest"
 	}
 
 	imgabs := cache.OciTempImage(sum, ociRef)
