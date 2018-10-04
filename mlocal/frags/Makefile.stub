@@ -238,8 +238,9 @@ check: $(BUILDDIR)/vendors-done
 .PHONY: test
 test:
 	@echo " TEST sudo go test"
+	@echo " Parallel test" $(nproc)
 	$(V)export CGO_CPPFLAGS="$(cgo_CPPFLAGS)" CGO_LDFLAGS="$(cgo_LDFLAGS)" && \
-		cd $(SOURCEDIR) && sudo -E `which go` test -count=1 -tags "$(go_TAG)" -cover -race ./...
+		cd $(SOURCEDIR) && sudo -E `which go` test -v -count=1 -tags "$(go_TAG)" -cover -parallel $(nproc) -race ./...
 	@echo "       PASS"
 
 .PHONY: testall
