@@ -86,10 +86,9 @@ jobs:
             echo 'export  GOCACHE=off' >> $BASH_ENV
             echo 'export PATH=$GOPATH/bin:$GOBIN:$GOROOT/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin' >> $BASH_ENV
       - restore_cache:
-          working_directory: $HOME/go
-          key: go-deps-{{ checksum "checksum.list" }}
+          key: go-deps-{{ checksum "go_deps_checksum.list" }}
           paths:
-            - bin
+            - /home/circleci/go/bin
       - run:
           name: fetch deps
           command: |-
@@ -97,17 +96,16 @@ jobs:
               mkdir -p ${GOBIN}
               curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
               go get -u golang.org/x/lint/golint
-              find bin/ -type f -exec md5sum "{}" + > checksum.list
+              find /home/circleci/go/bin -type f -exec md5sum "{}" + > checksum.list
             fi
       - save_cache:
-          key: dep-cache-{{ checksum "checksum.list" }}
+          key: dep-cache-{{ checksum "go_deps_checksum.list" }}
           paths:
-            - bin
+            - /home/circleci/go/bin
       - restore_cache:
-          working_directory: /usr/local
-          key: go-bin-{{ checksum "checksum.list" }}
+          key: go-bin-{{ checksum "go_bin_checksum.list" }}
           paths:
-            - go
+            - /usr/local/go
       - run:
           name: Update Go to 1.11 #CircleCi default Go version 1.9
           command: |-
@@ -119,9 +117,9 @@ jobs:
               find /usr/local/go -type f -exec md5sum "{}" + > checksum.list
             fi
       - save_cache:
-          key: dep-bin-{{ checksum "checksum.list" }}
+          key: dep-bin-{{ checksum "go_bin_checksum.list" }}
           paths:
-            - go
+            - /usr/local/go
       - run:
           name: update and get libs #The caches created via the save_cache step are stored for up to 30 days
           working_directory: /tmp
