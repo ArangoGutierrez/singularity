@@ -77,7 +77,7 @@ jobs:
     environment:
       GOPATH: /go
       GOROOT: /usr/local/go
-      GOBIN: /bo/bin
+      GOBIN: /go/bin
       PATH: /go/bin:/usr/local/go/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
     working_directory: ~/
     steps:
