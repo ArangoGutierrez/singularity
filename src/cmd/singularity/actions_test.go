@@ -33,7 +33,7 @@ type opts struct {
 // it return the exitCode and err of the execution
 func imageExec(t *testing.T, action string, opts opts, imagePath string, command []string) (stdout string, stderr string, exitCode int, err error) {
 	// action can be run/exec/shell
-	argv := []string{action}
+	argv := []string{"-v", "-d", action}
 	for _, bind := range opts.binds {
 		argv = append(argv, "--bind", bind)
 	}
