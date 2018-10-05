@@ -75,13 +75,13 @@ jobs:
   unit_test:
     machine: true
     environment:
-      GOPATH: /go
+      GOPATH: ~/go
       GOROOT: /usr/local/go
-      GOBIN: /go/bin
+      GOBIN: ~/go/bin
       PATH: /go/bin:/usr/local/go/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
     steps:
       - attach_workspace:
-          at: /go
+          at: ~/go
       - run:
           name: Update Go to 1.11
           working_directory: /tmp
@@ -96,7 +96,7 @@ jobs:
           working_directory: /tmp
           command: |-
             mkdir -p ${GOBIN}
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            go get github.com/tools/godep
             go get -u golang.org/x/lint/golint
       - run:
           name: install
