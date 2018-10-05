@@ -29,7 +29,7 @@ func TestGenConf(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.name, test.WithOutPrivilege(func(t *testing.T) {
 			defer os.Remove(tt.confOutPath)
 
 			t.Log("Name:", tt.name)
@@ -40,7 +40,7 @@ func TestGenConf(t *testing.T) {
 			} else if !eq {
 				t.Fatalf("Output file %v does not match correct output %v\n", tt.confOutPath, tt.confCorrectPath)
 			}
-		}))
+		}, tt.name))
 	}
 }
 

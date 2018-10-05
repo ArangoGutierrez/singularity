@@ -153,7 +153,7 @@ func Test_getEntity(t *testing.T) {
 
 	// Loop over test cases
 	for _, tt := range tests {
-		t.Run(tt.description, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.description, test.WithOutPrivilege(func(t *testing.T) {
 
 			m := mockService{
 				t:           t,
@@ -182,7 +182,7 @@ func Test_getEntity(t *testing.T) {
 
 			m.Stop()
 
-		}))
+		}, tt.description))
 
 	}
 }
@@ -233,7 +233,7 @@ func Test_getCollection(t *testing.T) {
 
 	// Loop over test cases
 	for _, tt := range tests {
-		t.Run(tt.description, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.description, test.WithOutPrivilege(func(t *testing.T) {
 
 			m := mockService{
 				t:           t,
@@ -262,7 +262,7 @@ func Test_getCollection(t *testing.T) {
 
 			m.Stop()
 
-		}))
+		}, tt.description))
 
 	}
 }
@@ -313,7 +313,7 @@ func Test_getContainer(t *testing.T) {
 
 	// Loop over test cases
 	for _, tt := range tests {
-		t.Run(tt.description, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.description, test.WithOutPrivilege(func(t *testing.T) {
 
 			m := mockService{
 				t:           t,
@@ -342,7 +342,7 @@ func Test_getContainer(t *testing.T) {
 
 			m.Stop()
 
-		}))
+		}, tt.description))
 
 	}
 }
@@ -393,7 +393,7 @@ func Test_getImage(t *testing.T) {
 
 	// Loop over test cases
 	for _, tt := range tests {
-		t.Run(tt.description, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.description, test.WithOutPrivilege(func(t *testing.T) {
 
 			m := mockService{
 				t:           t,
@@ -422,7 +422,7 @@ func Test_getImage(t *testing.T) {
 
 			m.Stop()
 
-		}))
+		}, tt.description))
 
 	}
 }
@@ -458,7 +458,7 @@ func Test_createEntity(t *testing.T) {
 
 	// Loop over test cases
 	for _, tt := range tests {
-		t.Run(tt.description, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.description, test.WithOutPrivilege(func(t *testing.T) {
 
 			m := mockService{
 				t:           t,
@@ -484,7 +484,7 @@ func Test_createEntity(t *testing.T) {
 
 			m.Stop()
 
-		}))
+		}, tt.description))
 
 	}
 }
@@ -520,7 +520,7 @@ func Test_createCollection(t *testing.T) {
 
 	// Loop over test cases
 	for _, tt := range tests {
-		t.Run(tt.description, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.description, test.WithOutPrivilege(func(t *testing.T) {
 
 			m := mockService{
 				t:           t,
@@ -546,7 +546,7 @@ func Test_createCollection(t *testing.T) {
 
 			m.Stop()
 
-		}))
+		}, tt.description))
 
 	}
 }
@@ -582,7 +582,7 @@ func Test_createContainer(t *testing.T) {
 
 	// Loop over test cases
 	for _, tt := range tests {
-		t.Run(tt.description, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.description, test.WithOutPrivilege(func(t *testing.T) {
 
 			m := mockService{
 				t:           t,
@@ -608,7 +608,7 @@ func Test_createContainer(t *testing.T) {
 
 			m.Stop()
 
-		}))
+		}, tt.description))
 
 	}
 }
@@ -644,7 +644,7 @@ func Test_createImage(t *testing.T) {
 
 	// Loop over test cases
 	for _, tt := range tests {
-		t.Run(tt.description, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.description, test.WithOutPrivilege(func(t *testing.T) {
 
 			m := mockService{
 				t:           t,
@@ -670,7 +670,7 @@ func Test_createImage(t *testing.T) {
 
 			m.Stop()
 
-		}))
+		}, tt.description))
 
 	}
 }
@@ -706,7 +706,7 @@ func Test_setTags(t *testing.T) {
 
 	// Loop over test cases
 	for _, tt := range tests {
-		t.Run(tt.description, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.description, test.WithOutPrivilege(func(t *testing.T) {
 
 			m := mockService{
 				t:           t,
@@ -728,7 +728,7 @@ func Test_setTags(t *testing.T) {
 
 			m.Stop()
 
-		}))
+		}, tt.description))
 
 	}
 }
@@ -767,7 +767,7 @@ func Test_search(t *testing.T) {
 
 	// Loop over test cases
 	for _, tt := range tests {
-		t.Run(tt.description, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.description, test.WithOutPrivilege(func(t *testing.T) {
 
 			m := mockService{
 				t:           t,
@@ -793,7 +793,7 @@ func Test_search(t *testing.T) {
 
 			m.Stop()
 
-		}))
+		}, tt.description))
 
 	}
 }

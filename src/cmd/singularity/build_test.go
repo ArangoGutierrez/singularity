@@ -36,7 +36,7 @@ func imageVerify(t *testing.T, imagePath string, labels bool) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.name, test.WithOutPrivilege(func(t *testing.T) {
 			_, stderr, exitCode, err := imageExec(t, "exec", opts{}, imagePath, tt.execArgs)
 			if tt.expectSuccess && (exitCode != 0) {
 				t.Log(stderr)
@@ -45,7 +45,7 @@ func imageVerify(t *testing.T, imagePath string, labels bool) {
 				t.Log(stderr)
 				t.Fatalf("unexpected success running '%v'", strings.Join(tt.execArgs, " "))
 			}
-		}))
+		}, tt.name))
 	}
 }
 
@@ -118,7 +118,7 @@ func TestBuild(t *testing.T) {
 				t.Fatalf("unexpected failure: %v", err)
 			}
 			imageVerify(t, imagePath, false)
-		}))
+		}, tt.name))
 	}
 }
 
@@ -202,9 +202,9 @@ func TestBuildMultiStage(t *testing.T) {
 						t.Fatalf("unexpected failure: %v", err)
 					}
 					imageVerify(t, ts.imagePath, ts.labels)
-				}))
+				}, path.Join(tt.name, ts.name)))
 			}
-		}))
+		}, tt.name))
 	}
 }
 

@@ -55,7 +55,7 @@ func TestPull(t *testing.T) {
 				t.Fatalf("unexpected failure: %v", err)
 			}
 			imageVerify(t, tt.imagePath, false)
-		}))
+		}, tt.name))
 	}
 
 	// test --force

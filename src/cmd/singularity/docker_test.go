@@ -43,7 +43,7 @@ func TestDocker(t *testing.T) {
 				t.Log(string(b))
 				t.Fatal("unexpected success")
 			}
-		}))
+		}, tt.name))
 	}
 }
 
@@ -70,7 +70,7 @@ func TestDockerAUFS(t *testing.T) {
 		{"Glob", []string{"ls", "/test/*/.wh*"}, false},
 	}
 	for _, tt := range fileTests {
-		t.Run(tt.name, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.name, test.WithOutPrivilege(func(t *testing.T) {
 			_, stderr, exitCode, err := imageExec(t, "exec", opts{}, imagePath, tt.execArgs)
 			if tt.expectSuccess && (exitCode != 0) {
 				t.Log(stderr)
@@ -79,7 +79,7 @@ func TestDockerAUFS(t *testing.T) {
 				t.Log(stderr)
 				t.Fatalf("unexpected success running '%v'", strings.Join(tt.execArgs, " "))
 			}
-		}))
+		}, tt.name))
 	}
 }
 
@@ -106,7 +106,7 @@ func TestDockerPermissions(t *testing.T) {
 		{"TestDirFile", []string{"ls", "/testdir/testfile"}, false},
 	}
 	for _, tt := range fileTests {
-		t.Run(tt.name, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.name, test.WithOutPrivilege(func(t *testing.T) {
 			_, stderr, exitCode, err := imageExec(t, "exec", opts{}, imagePath, tt.execArgs)
 			if tt.expectSuccess && (exitCode != 0) {
 				t.Log(stderr)
@@ -115,7 +115,7 @@ func TestDockerPermissions(t *testing.T) {
 				t.Log(stderr)
 				t.Fatalf("unexpected success running '%v'", strings.Join(tt.execArgs, " "))
 			}
-		}))
+		}, tt.name))
 	}
 }
 
@@ -179,7 +179,7 @@ func TestDockerDefFile(t *testing.T) {
 				t.Fatalf("unexpected failure: %v", err)
 			}
 			imageVerify(t, imagePath, false)
-		}))
+		}, tt.name))
 	}
 }
 
@@ -272,6 +272,6 @@ func TestDockerRegistry(t *testing.T) {
 				t.Log(string(b))
 				t.Fatalf("unexpected success")
 			}
-		}))
+		}, tt.name))
 	}
 }

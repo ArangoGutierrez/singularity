@@ -184,7 +184,7 @@ func TestBuild(t *testing.T) {
 
 	// Loop over test cases
 	for _, tt := range tests {
-		t.Run(tt.description, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.description, test.WithOutPrivilege(func(t *testing.T) {
 			rb, err := NewRemoteBuilder(tt.imagePath, "", types.Definition{}, tt.isDetached, s.URL, authToken)
 			if err != nil {
 				t.Fatalf("failed to get new remote builder: %v", err)
@@ -212,7 +212,7 @@ func TestBuild(t *testing.T) {
 					t.Fatalf("unexpected success")
 				}
 			}
-		}))
+		}, tt.description))
 	}
 }
 
@@ -252,7 +252,7 @@ func TestDoBuildRequest(t *testing.T) {
 
 	// Loop over test cases
 	for _, tt := range tests {
-		t.Run(tt.description, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.description, test.WithOutPrivilege(func(t *testing.T) {
 			m.buildResponseCode = tt.responseCode
 
 			// Call the handler
@@ -281,7 +281,7 @@ func TestDoBuildRequest(t *testing.T) {
 					t.Fatalf("unexpected success")
 				}
 			}
-		}))
+		}, tt.description))
 	}
 }
 
@@ -321,7 +321,7 @@ func TestDoStatusRequest(t *testing.T) {
 
 	// Loop over test cases
 	for _, tt := range tests {
-		t.Run(tt.description, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.description, test.WithOutPrivilege(func(t *testing.T) {
 			m.statusResponseCode = tt.responseCode
 
 			// Call the handler
@@ -350,6 +350,6 @@ func TestDoStatusRequest(t *testing.T) {
 					t.Fatalf("unexpected success")
 				}
 			}
-		}))
+		}, tt.description))
 	}
 }

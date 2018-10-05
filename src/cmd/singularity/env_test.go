@@ -45,12 +45,12 @@ func TestSingularityEnv(t *testing.T) {
 		{"OverwriteCustomPath", customImage, overwrittenPath, []string{"SINGULARITYENV_PATH=" + overwrittenPath}},
 	}
 
-	for _, currentTest := range singularityEnvTests {
-		t.Run(currentTest.name, test.WithoutPrivilege(func(t *testing.T) {
-			args := []string{"exec", currentTest.image, "env"}
+	for _, tt := range singularityEnvTests {
+		t.Run(tt.name, test.WithOutPrivilege(func(t *testing.T) {
+			args := []string{"exec", tt.image, "env"}
 
 			cmd := exec.Command(cmdPath, args...)
-			cmd.Env = append(os.Environ(), currentTest.env...)
+			cmd.Env = append(os.Environ(), tt.env...)
 			b, err := cmd.CombinedOutput()
 
 			out := string(b)
@@ -62,9 +62,9 @@ func TestSingularityEnv(t *testing.T) {
 				t.Fatalf("Error running command: %v", err)
 			}
 
-			if !strings.Contains(out, currentTest.path) {
-				t.Fatalf("Command output did not contain the path '%s'", currentTest.path)
+			if !strings.Contains(out, tt.path) {
+				t.Fatalf("Command output did not contain the path '%s'", tt.path)
 			}
-		}))
+		}, tt.name))
 	}
 }

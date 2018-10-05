@@ -24,6 +24,7 @@ type opts struct {
 	binds   []string
 	contain bool
 	home    string
+	nohome  string
 	workdir string
 	pwd     string
 }
@@ -41,6 +42,9 @@ func imageExec(t *testing.T, action string, opts opts, imagePath string, command
 	}
 	if opts.home != "" {
 		argv = append(argv, "--home", opts.home)
+	}
+	if opts.nohome != "" {
+		argv = append(argv, "--no-home")
 	}
 	if opts.workdir != "" {
 		argv = append(argv, "--workdir", opts.workdir)
@@ -92,7 +96,7 @@ func testSingularityRun(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.name, test.WithOutPrivilege(func(t *testing.T) {
 			_, stderr, exitCode, err := imageExec(t, tt.action, tt.opts, tt.image, tt.argv)
 			if tt.expectSuccess && (exitCode != 0) {
 				t.Log(stderr)
@@ -101,7 +105,7 @@ func testSingularityRun(t *testing.T) {
 				t.Log(stderr)
 				t.Fatalf("unexpected success running '%v'", strings.Join(tt.argv, " "))
 			}
-		}))
+		}, tt.name))
 	}
 }
 
@@ -124,7 +128,7 @@ func testSingularityExec(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.name, test.WithOutPrivilege(func(t *testing.T) {
 			_, stderr, exitCode, err := imageExec(t, tt.action, tt.opts, tt.image, tt.argv)
 			if tt.expectSuccess && (exitCode != 0) {
 				t.Log(stderr)
@@ -133,7 +137,7 @@ func testSingularityExec(t *testing.T) {
 				t.Log(stderr)
 				t.Fatalf("unexpected success running '%v'", strings.Join(tt.argv, " "))
 			}
-		}))
+		}, tt.name))
 	}
 }
 
@@ -158,7 +162,7 @@ func testSTDINPipe(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.name, test.WithOutPrivilege(func(t *testing.T) {
 			cmd := exec.Command(tt.binName, tt.argv...)
 			if err := cmd.Start(); err != nil {
 				t.Fatalf("cmd.Start: %v", err)
@@ -174,7 +178,7 @@ func testSTDINPipe(t *testing.T) {
 					}
 				}
 			}
-		}))
+		}, tt.name))
 	}
 }
 
@@ -203,7 +207,7 @@ func testRunFromURI(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.name, test.WithOutPrivilege(func(t *testing.T) {
 			_, stderr, exitCode, err := imageExec(t, tt.action, tt.opts, tt.image, tt.argv)
 			if tt.expectSuccess && (exitCode != 0) {
 				t.Log(stderr)
@@ -212,7 +216,7 @@ func testRunFromURI(t *testing.T) {
 				t.Log(stderr)
 				t.Fatalf("unexpected success running '%v'", strings.Join(tt.argv, " "))
 			}
-		}))
+		}, tt.name))
 	}
 }
 

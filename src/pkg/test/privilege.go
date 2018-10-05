@@ -11,6 +11,7 @@ import (
 	"log"
 	"os"
 	"os/user"
+	"path"
 	"runtime"
 	"strconv"
 	"syscall"
@@ -24,7 +25,7 @@ const (
 	// CacheDirPriv is the directory the cachedir gets set to when running privileged
 	CacheDirPriv = "/tmp/WithPrivilege"
 	// CacheDirUnpriv is the directory the cachedir gets set to when running unprivileged
-	CacheDirUnpriv = "/tmp/WithoutPrivilege"
+	CacheDirUnpriv = "/tmp/WithOutPrivilege"
 )
 
 // EnsurePrivilege ensures elevated privileges are available during a test.
@@ -83,12 +84,12 @@ func ResetPrivilege(t *testing.T) {
 
 // WithPrivilege wraps the supplied test function with calls to ensure
 // the test is run with elevated privileges.
-func WithPrivilege(f func(t *testing.T)) func(t *testing.T) {
+func WithPrivilege(f func(t *testing.T), testname string) func(t *testing.T) {
 	return func(t *testing.T) {
 		t.Helper()
 
 		// set SINGULARITY_CACHEDIR
-		os.Setenv("SINGULARITY_CACHEDIR", CacheDirPriv)
+		os.Setenv("SINGULARITY_CACHEDIR", path.Join(CacheDirPriv, testname))
 
 		EnsurePrivilege(t)
 
@@ -96,17 +97,17 @@ func WithPrivilege(f func(t *testing.T)) func(t *testing.T) {
 	}
 }
 
-// WithoutPrivilege wraps the supplied test function with calls to ensure
+// WithOutPrivilege wraps the supplied test function with calls to ensure
 // the test is run without elevated privileges.
-func WithoutPrivilege(f func(t *testing.T)) func(t *testing.T) {
+func WithOutPrivilege(f func(t *testing.T), testname string) func(t *testing.T) {
 	return func(t *testing.T) {
 		t.Helper()
 
+		// set SINGULARITY_CACHEDIR
+		os.Setenv("SINGULARITY_CACHEDIR", path.Join(CacheDirUnpriv, testname))
+
 		DropPrivilege(t)
 		defer ResetPrivilege(t)
-
-		// set SINGULARITY_CACHEDIR
-		os.Setenv("SINGULARITY_CACHEDIR", CacheDirUnpriv)
 
 		f(t)
 	}

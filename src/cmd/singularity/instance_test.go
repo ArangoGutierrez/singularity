@@ -52,7 +52,7 @@ func TestInstance(t *testing.T) {
 	imageVerify(t, imagePath, true)
 	defer os.RemoveAll(imagePath)
 
-	t.Run("StartListStop", test.WithoutPrivilege(func(t *testing.T) {
+	t.Run("StartListStop", test.WithOutPrivilege(func(t *testing.T) {
 		var defaultInstance = "www"
 
 		startInstanceOutput, err := startInstance(imagePath, defaultInstance)
@@ -69,5 +69,5 @@ func TestInstance(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Error stopping instance by name: %v. Output follows.\n%s", err, string(stopInstanceOutput))
 		}
-	}))
+	}, "StartListStop"))
 }

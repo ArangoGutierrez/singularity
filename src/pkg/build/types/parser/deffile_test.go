@@ -34,7 +34,7 @@ func TestScanDefinitionFile(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.name, test.WithOutPrivilege(func(t *testing.T) {
 			deffile := tt.defPath
 			r, err := os.Open(deffile)
 			if err != nil {
@@ -66,7 +66,7 @@ func TestScanDefinitionFile(t *testing.T) {
 				t.Fatal("scanDefinitionFile does not produce same header as reference")
 			}
 
-		}))
+		}, tt.name))
 	}
 }
 
@@ -87,7 +87,7 @@ func TestParseDefinitionFile(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.name, test.WithOutPrivilege(func(t *testing.T) {
 			defFile, err := os.Open(tt.defPath)
 			if err != nil {
 				t.Fatal("failed to open:", err)
@@ -113,7 +113,7 @@ func TestParseDefinitionFile(t *testing.T) {
 			if !reflect.DeepEqual(defTest, defCorrect) {
 				t.Fatal("parsed definition did not match reference")
 			}
-		}))
+		}, tt.name))
 	}
 }
 
@@ -129,7 +129,7 @@ func TestParseDefinitionFileFailure(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.name, test.WithOutPrivilege(func(t *testing.T) {
 			defFile, err := os.Open(tt.defPath)
 			if err != nil {
 				t.Fatal("failed to open:", err)
@@ -139,6 +139,6 @@ func TestParseDefinitionFileFailure(t *testing.T) {
 			if _, err = ParseDefinitionFile(defFile); err == nil {
 				t.Fatal("unexpected success parsing definition file")
 			}
-		}))
+		}, tt.name))
 	}
 }

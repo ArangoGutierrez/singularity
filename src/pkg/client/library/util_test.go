@@ -38,11 +38,11 @@ func Test_isLibraryPullRef(t *testing.T) {
 		{"Bad initial character", "library://entity/collection/-image:tag", false},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.name, test.WithOutPrivilege(func(t *testing.T) {
 			if got := IsLibraryPullRef(tt.libraryRef); got != tt.want {
 				t.Errorf("isLibraryPullRef() = %v, want %v", got, tt.want)
 			}
-		}))
+		}, tt.name))
 	}
 }
 
@@ -67,11 +67,11 @@ func Test_isLibraryPushRef(t *testing.T) {
 		{"No capitals", "library://Entity/collection/image:tag", false},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.name, test.WithOutPrivilege(func(t *testing.T) {
 			if got := IsLibraryPushRef(tt.libraryRef); got != tt.want {
 				t.Errorf("isLibraryPushRef() = %v, want %v", got, tt.want)
 			}
-		}))
+		}, tt.name))
 	}
 }
 
@@ -90,11 +90,11 @@ func Test_IsRefPart(t *testing.T) {
 		{"No capitals", "Abc123", false},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.name, test.WithOutPrivilege(func(t *testing.T) {
 			if got := IsRefPart(tt.libraryRef); got != tt.want {
 				t.Errorf("IsRefPart() = %v, want %v", got, tt.want)
 			}
-		}))
+		}, tt.name))
 	}
 }
 
@@ -114,11 +114,11 @@ func Test_IsImageHash(t *testing.T) {
 		{"sif bad character", "sif.g574b72c-7705-49cc-874e-424fc3b78116", false},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.name, test.WithOutPrivilege(func(t *testing.T) {
 			if got := IsImageHash(tt.libraryRef); got != tt.want {
 				t.Errorf("IsImageHash() = %v, want %v", got, tt.want)
 			}
-		}))
+		}, tt.name))
 	}
 }
 
@@ -143,7 +143,7 @@ func Test_parseLibraryRef(t *testing.T) {
 		{"Good short ref multi tag", "library://image:tag1,tag2,tag3", "", "", "image", []string{"tag1", "tag2", "tag3"}},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.name, test.WithOutPrivilege(func(t *testing.T) {
 			ent, col, con, tags := parseLibraryRef(tt.libraryRef)
 			if ent != tt.wantEnt {
 				t.Errorf("parseLibraryRef() = entity %v, want %v", ent, tt.wantEnt)
@@ -157,7 +157,7 @@ func Test_parseLibraryRef(t *testing.T) {
 			if !reflect.DeepEqual(tags, tt.wantTags) {
 				t.Errorf("parseLibraryRef() = entity %v, want %v", tags, tt.wantTags)
 			}
-		}))
+		}, tt.name))
 	}
 }
 

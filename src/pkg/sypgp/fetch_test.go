@@ -65,7 +65,7 @@ func TestFetchPubkey(t *testing.T) {
 		{"Unauthorized", http.StatusUnauthorized, nil, fp, srv.URL, "", true},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, test.WithoutPrivilege(func(t *testing.T) {
+		t.Run(tt.name, test.WithOutPrivilege(func(t *testing.T) {
 			ms.code = tt.code
 			ms.el = tt.el
 
@@ -85,6 +85,6 @@ func TestFetchPubkey(t *testing.T) {
 					}
 				}
 			}
-		}))
+		}, tt.name))
 	}
 }

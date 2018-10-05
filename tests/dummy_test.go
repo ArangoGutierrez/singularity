@@ -35,8 +35,8 @@ func TestMain(m *testing.M) {
 }
 
 func Test_ImageBuild(t *testing.T) {
-	t.Run("Docker", test.WithPrivilege(docker))
-	t.Run("Exec", test.WithPrivilege(sExec))
+	t.Run("Docker", test.WithPrivilege(docker, "Docker"))
+	t.Run("Exec", test.WithPrivilege(sExec, "Exec"))
 }
 
 func docker(t *testing.T) {
