@@ -79,25 +79,25 @@ jobs:
       GOROOT: /usr/local/go
       GOBIN: /go/bin
       PATH: /go/bin:/usr/local/go/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
-    working_directory: ~/
     steps:
+      - attach_workspace:
+          at: /go
       - run:
           name: Update Go to 1.11
+          working_directory: /tmp
           command: |-
-            cd /tmp
             wget https://dl.google.com/go/go1.11.linux-amd64.tar.gz
             sudo tar -xvf go1.11.linux-amd64.tar.gz
             sudo rm -rf /usr/local/go
             sudo mv go /usr/local
+            sudo chown -R circleci:circleci /go
       - run:
           name: fetch deps
+          working_directory: /tmp
           command: |-
-            mkdir -p $GOBIN
+            mkdir -p ${GOBIN}
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             go get -u golang.org/x/lint/golint
-      - attach_workspace:
-          at: /go
-          <<: *defaults
       - run:
           name: install
           command: |-
