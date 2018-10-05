@@ -96,7 +96,7 @@ jobs:
               mkdir -p ${GOBIN}
               curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
               go get -u golang.org/x/lint/golint
-              find /home/circleci/go/bin -type f -exec md5sum "{}" + > checksum.list
+              find /home/circleci/go/bin -type f -exec md5sum "{}" + > /home/circleci/project/go_deps_checksum.list
             fi
       - save_cache:
           key: dep-cache-{{ checksum "go_deps_checksum.list" }}
@@ -114,7 +114,7 @@ jobs:
               sudo rm -rf /usr/local/go
               sudo tar -C /usr/local -xzf go1.11.linux-amd64.tar.gz
               sudo chown -R circleci:circleci ~/go
-              find /usr/local/go -type f -exec md5sum "{}" + > checksum.list
+              find /usr/local/go -type f -exec md5sum "{}" + > /home/circleci/project/go_bin_checksum.list
             fi
       - save_cache:
           key: dep-bin-{{ checksum "go_bin_checksum.list" }}
