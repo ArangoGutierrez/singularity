@@ -72,7 +72,7 @@ jobs:
             ./mconfig -p /usr/local
             make -j$(nproc) -C ./builddir all
 
-  cli_test:
+  runtime_test:
     machine: true
     steps:
       - attach_workspace:
@@ -85,74 +85,60 @@ jobs:
             echo 'export  GOBIN=$HOME/go/bin' >> $BASH_ENV
             echo 'export  GOCACHE=off' >> $BASH_ENV
             echo 'export PATH=$GOPATH/bin:$GOBIN:$GOROOT/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin' >> $BASH_ENV
-      - run:
-          name: Update Go to 1.11
-          working_directory: /tmp
-          command: |-
-            wget https://dl.google.com/go/go1.11.linux-amd64.tar.gz
-            sudo rm -rf /usr/local/go
-            sudo tar -C /usr/local -xzf go1.11.linux-amd64.tar.gz
-            sudo chown -R circleci:circleci ~/go
+      - run: cd $HOME/go
+      - restore_cache:
+          key: go-deps-{{ checksum "checksum.list" }}
+          paths:
+            - bin
       - run:
           name: fetch deps
+          command: |-
+            if [ ! -d bin ]; then
+              mkdir -p ${GOBIN}
+              curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+              go get -u golang.org/x/lint/golint
+              find bin/ -type f -exec md5sum "{}" + > checksum.list
+            fi
+      - save_cache:
+          key: dep-cache-{{ checksum "checksum.list" }}
+          paths:
+            - bin
+      - run: cd /usr/local
+      - restore_cache:
+          key: go-bin-{{ checksum "checksum.list" }}
+          paths:
+            - go
+      - run:
+          name: Update Go to 1.11 #CircleCi default Go version 1.9
+          command: |-
+            if [ ! -d go ]; then
+              cd /tmp && wget https://dl.google.com/go/go1.11.linux-amd64.tar.gz
+              sudo rm -rf /usr/local/go
+              sudo tar -C /usr/local -xzf go1.11.linux-amd64.tar.gz
+              sudo chown -R circleci:circleci ~/go
+              find /usr/local/go -type f -exec md5sum "{}" + > checksum.list
+            fi
+      - save_cache:
+          key: dep-bin-{{ checksum "checksum.list" }}
+          paths:
+            - go
+      - run:
+          name: update and get libs #The caches created via the save_cache step are stored for up to 30 days
           working_directory: /tmp
           command: |-
-            mkdir -p ${GOBIN}
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-            go get -u golang.org/x/lint/golint
             sudo apt-get update -y && sudo apt-get install -y build-essential libssl-dev uuid-dev libgpgme11-dev squashfs-tools libseccomp-dev
       - run:
           name: build & install singularity
           command: |-
             cd $HOME/go/src/github.com/sylabs/singularity
+            du -h vendor/
             ./mconfig -p /usr/local
             make -j `nproc 2>/dev/null || echo 1` -C ./builddir all
             sudo make -C ./builddir install
       - run:
           name: test singularity
           command: |-
-            sudo GOPATH=$HOME/go $GOROOT/bin/go test -count=1 -cover -race -tags "containers_image_openpgp apparmor selinux seccomp" github.com/sylabs/singularity/src/cmd/singularity
-
-  unit_test:
-    machine: true
-    steps:
-      - attach_workspace:
-          at: ~/go
-      - run:
-          name: Setup environment
-          command: |-
-            echo 'export  GOPATH=$HOME/go' >> $BASH_ENV
-            echo 'export  GOROOT=/usr/local/go' >> $BASH_ENV
-            echo 'export  GOBIN=$HOME/go/bin' >> $BASH_ENV
-            echo 'export  GOCACHE=off' >> $BASH_ENV
-            echo 'export PATH=$GOPATH/bin:$GOBIN:$GOROOT/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin' >> $BASH_ENV
-      - run:
-          name: Update Go to 1.11
-          working_directory: /tmp
-          command: |-
-            wget https://dl.google.com/go/go1.11.linux-amd64.tar.gz
-            sudo rm -rf /usr/local/go
-            sudo tar -C /usr/local -xzf go1.11.linux-amd64.tar.gz
-            sudo chown -R circleci:circleci ~/go
-      - run:
-          name: fetch deps
-          working_directory: /tmp
-          command: |-
-            mkdir -p ${GOBIN}
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-            go get -u golang.org/x/lint/golint
-            sudo apt-get update -y && sudo apt-get install -y build-essential libssl-dev uuid-dev libgpgme11-dev squashfs-tools libseccomp-dev
-      - run:
-          name: build & install singularity
-          command: |-
-            cd $HOME/go/src/github.com/sylabs/singularity
-            ./mconfig -p /usr/local
-            make -j `nproc 2>/dev/null || echo 1` -C ./builddir all
-            sudo make -C ./builddir install
-      - run:
-          name: test singularity
-          command: |-
-            sudo GOPATH=$HOME/go $GOROOT/bin/go test -count=1 -cover -race -tags "containers_image_openpgp apparmor selinux seccomp" github.com/sylabs/singularity/src/pkg/...
+            make -C ./builddir test
 
 workflows:
   version: 2
@@ -168,9 +154,6 @@ workflows:
       - go1.11-alpine:
           requires:
             - get_source
-      - cli_test:
-          requires:
-            - get_source
-      - unit_test:
+      - runtime_test:
           requires:
             - get_source
