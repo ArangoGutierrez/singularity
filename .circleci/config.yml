@@ -86,7 +86,8 @@ jobs:
             cd /tmp
             wget https://dl.google.com/go/go1.11.linux-amd64.tar.gz
             sudo tar -xvf go1.11.linux-amd64.tar.gz
-            sudo mv --force go /usr/local
+            sudo rm -rf /usr/local/go
+            sudo mv go /usr/local
       - run:
           name: fetch deps
           command: |-
