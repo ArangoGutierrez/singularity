@@ -102,6 +102,7 @@ jobs:
             go get -u golang.org/x/lint/golint
       - run:
           name: install
+          <<: *defaults
           command: |-
             ./mconfig -p /usr/local
             make -j `nproc 2>/dev/null || echo 1` -C ./builddir all
