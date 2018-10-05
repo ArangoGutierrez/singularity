@@ -207,9 +207,12 @@ func testRunFromURI(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		t.Log(os.Getenv("SINGULARITY_CACHEDIR"))
 		t.Run(tt.name, test.WithOutPrivilege(func(t *testing.T) {
+			t.Log(os.Getenv("SINGULARITY_CACHEDIR"))
 			_, stderr, exitCode, err := imageExec(t, tt.action, tt.opts, tt.image, tt.argv)
 			if tt.expectSuccess && (exitCode != 0) {
+				t.Log(os.Getenv("SINGULARITY_CACHEDIR"))
 				t.Log(stderr)
 				t.Fatalf("unexpected failure running '%v': %v", strings.Join(tt.argv, " "), err)
 			} else if !tt.expectSuccess && (exitCode != 1) {
