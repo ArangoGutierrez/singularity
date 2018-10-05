@@ -124,4 +124,4 @@ workflows:
             - get_source
       - unit_test:
           requires:
-            - go1.11-stretch
+            - get_source
