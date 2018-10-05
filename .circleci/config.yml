@@ -102,8 +102,8 @@ jobs:
             go get -u golang.org/x/lint/golint
       - run:
           name: install
-          <<: *defaults
           command: |-
+            cd $HOME/go/src/github.com/sylabs/singularity
             ./mconfig -p /usr/local
             make -j `nproc 2>/dev/null || echo 1` -C ./builddir all
             sudo make -C ./builddir install
