@@ -116,6 +116,6 @@ workflows:
       - go1.11-alpine:
           requires:
             - get_source
-      - singularity_tests:
+      - unit_test:
           requires:
             - go1.11-stretch
