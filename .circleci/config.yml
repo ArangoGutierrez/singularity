@@ -136,6 +136,7 @@ jobs:
       - run:
           name: test singularity
           command: |-
+            cd $HOME/go/src/github.com/sylabs/singularity
             make -C ./builddir test
 
 workflows:
