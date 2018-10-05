@@ -100,7 +100,7 @@ jobs:
             mkdir -p ${GOBIN}
             go get github.com/tools/godep
             go get -u golang.org/x/lint/golint
-            sudo apt-get install -y squashfs-tools uuid-dev libuuid1 libssl-dev libssl1.0.0 libarchive-dev libgpgme11-dev libseccomp-dev
+            sudo apt-get update -y && sudo apt-get install -y build-essential libssl-dev uuid-dev libgpgme11-dev
       - run:
           name: install
           command: |-
