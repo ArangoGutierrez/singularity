@@ -87,9 +87,8 @@ jobs:
           working_directory: /tmp
           command: |-
             wget https://dl.google.com/go/go1.11.linux-amd64.tar.gz
-            sudo tar -xvf go1.11.linux-amd64.tar.gz
             sudo rm -rf /usr/local/go
-            sudo mv go /usr/local
+            sudo tar -C /usr/local -xzf go1.11.1.linux-amd64.tar.gz
             sudo chown -R circleci:circleci /go
       - run:
           name: fetch deps
