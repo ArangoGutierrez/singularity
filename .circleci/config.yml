@@ -111,7 +111,7 @@ jobs:
       - run:
           name: test singularity
           command: |-
-            sudo GOPATH=$HOME/go go test -count=1 -cover -race -tags "containers_image_openpgp apparmor selinux seccomp" github.com/sylabs/singularity/src/cmd/singularity
+            sudo GOPATH=$HOME/go $GOROOT/bin/go test -count=1 -cover -race -tags "containers_image_openpgp apparmor selinux seccomp" github.com/sylabs/singularity/src/cmd/singularity
 
   unit_test:
     machine: true
@@ -152,7 +152,7 @@ jobs:
       - run:
           name: test singularity
           command: |-
-            sudo GOPATH=$HOME/go go test -count=1 -cover -race -tags "containers_image_openpgp apparmor selinux seccomp" github.com/sylabs/singularity/src/pkg/...
+            sudo GOPATH=$HOME/go $GOROOT/bin/go test -count=1 -cover -race -tags "containers_image_openpgp apparmor selinux seccomp" github.com/sylabs/singularity/src/pkg/...
 
 workflows:
   version: 2
