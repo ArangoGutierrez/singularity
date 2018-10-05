@@ -75,9 +75,9 @@ jobs:
   unit_test:
     machine: true
     environment:
-      GOPATH: ~/go
+      GOPATH: $HOME/go
       GOROOT: /usr/local/go
-      GOBIN: ~/go/bin
+      GOBIN: $HOME/go/bin
       PATH: /go/bin:/usr/local/go/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
     steps:
       - attach_workspace:
