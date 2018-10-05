@@ -98,7 +98,7 @@ jobs:
           working_directory: /tmp
           command: |-
             mkdir -p ${GOBIN}
-            go get -u -v github.com/tools/godep
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             go get -u golang.org/x/lint/golint
             sudo apt-get update -y && sudo apt-get install -y build-essential libssl-dev uuid-dev libgpgme11-dev
       - run:
