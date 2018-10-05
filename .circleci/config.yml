@@ -87,14 +87,14 @@ jobs:
             wget https://dl.google.com/go/go1.11.linux-amd64.tar.gz
             sudo tar -xvf go1.11.linux-amd64.tar.gz
             sudo mv --force go /usr/local
-      - attach_workspace:
-          at: /go
       - run:
           name: fetch deps
           command: |-
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             go get -u golang.org/x/lint/golint
-        <<: *defaults
+      - attach_workspace:
+          at: /go
+          <<: *defaults
       - run:
           name: install
           command: |-
