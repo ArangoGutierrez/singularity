@@ -100,7 +100,7 @@ jobs:
             mkdir -p ${GOBIN}
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             go get -u golang.org/x/lint/golint
-            sudo apt-get update -y && sudo apt-get install -y build-essential libssl-dev uuid-dev libgpgme11-dev
+            sudo apt-get update -y && sudo apt-get install -y build-essential libssl-dev uuid-dev libgpgme11-dev squashfs-tools libseccomp-dev
       - run:
           name: build & install singularity
           command: |-
@@ -141,7 +141,7 @@ jobs:
             mkdir -p ${GOBIN}
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             go get -u golang.org/x/lint/golint
-            sudo apt-get update -y && sudo apt-get install -y build-essential libssl-dev uuid-dev libgpgme11-dev
+            sudo apt-get update -y && sudo apt-get install -y build-essential libssl-dev uuid-dev libgpgme11-dev squashfs-tools libseccomp-dev
       - run:
           name: build & install singularity
           command: |-
