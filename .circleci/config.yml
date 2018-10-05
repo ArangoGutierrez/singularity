@@ -2,7 +2,7 @@ version: 2.0
 
 defaults: &defaults
   working_directory: /go/src/github.com/sylabs/singularity
-  
+
 jobs:
   get_source:
     <<: *defaults
@@ -72,50 +72,35 @@ jobs:
             ./mconfig -p /usr/local
             make -j$(nproc) -C ./builddir all
 
-  singularity_tests:
+  unit_test:
     machine: true
     environment:
       GOPATH: /go
+      GOROOT: /usr/local/go
+      PATH: /go/bin:/usr/local/go/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
     working_directory: ~/
     steps:
       - run:
-          name: Create go path for root workspace
+          name: Update Go to 1.11
           command: |-
-            sudo mkdir -p /go/src/github.com/sylabs/singularity
-            sudo chown -R circleci:circleci /go
+            cd /tmp
+            wget https://dl.google.com/go/go1.11.linux-amd64.tar.gz
+            sudo tar -xvf go1.11.linux-amd64.tar.gz
+            sudo mv go /usr/local
       - attach_workspace:
           at: /go
       - run:
-          name: Install dep
-          <<: *defaults
+          name: fetch deps
           command: |-
-            go get -u github.com/golang/dep/cmd/dep
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            go get -u golang.org/x/lint/golint
+        <<: *defaults
       - run:
-          name: Install Singularity
-          <<: *defaults
+          name: install
           command: |-
-            sudo PATH="/usr/local/go/bin:${PATH}" make -C builddir/ install
-      - restore_cache:
-          key: singularity-go1.11-stretch-{{ checksum "/go/src/github.com/sylabs/singularity/.circleci/Singularity" }}
-          paths:
-            - ~/go1.11-stretch.sif
-      - run:
-          name: Build Singularity Image if Necessary
-          command: |-
-            if [ ! -f ~/go1.11-stretch.sif ]; then
-              sudo apt-get update
-              sudo apt-get install squashfs-tools
-              sudo /sroot/bin/singularity build ~/go1.11-stretch.sif /go/src/github.com/sylabs/singularity/.circleci/Singularity
-            fi
-      - save_cache:
-          key: singularity-go1.11-stretch-{{ checksum "/go/src/github.com/sylabs/singularity/.circleci/Singularity" }}
-          paths:
-            - ~/go1.11-stretch.sif
-      - run:
-          name: Run Singularity Tests
-          command: |-
-            sudo /sroot/bin/singularity run --bind /go/,/sroot/,/sroot/bin/singularity:/usr/local/bin/singularity \
-              --pwd / --allow-setuid --keep-privs --writable-tmpfs --scratch /tmp/ go1.11-stretch.sif
+            ./mconfig -p /usr/local
+            make -j `nproc 2>/dev/null || echo 1` -C ./builddir all
+            sudo make -C ./builddir install
 
 workflows:
   version: 2
@@ -134,4 +119,3 @@ workflows:
       - singularity_tests:
           requires:
             - go1.11-stretch
-
