@@ -77,6 +77,7 @@ jobs:
     environment:
       GOPATH: /go
       GOROOT: /usr/local/go
+      GOBIN: /bo/bin
       PATH: /go/bin:/usr/local/go/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
     working_directory: ~/
     steps:
@@ -91,6 +92,7 @@ jobs:
       - run:
           name: fetch deps
           command: |-
+            mkdir -p $GOBIN
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             go get -u golang.org/x/lint/golint
       - attach_workspace:
