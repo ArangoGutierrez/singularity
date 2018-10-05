@@ -86,7 +86,7 @@ jobs:
             cd /tmp
             wget https://dl.google.com/go/go1.11.linux-amd64.tar.gz
             sudo tar -xvf go1.11.linux-amd64.tar.gz
-            sudo mv go /usr/local
+            sudo mv --force go /usr/local
       - attach_workspace:
           at: /go
       - run:
