@@ -42,6 +42,19 @@ jobs:
             ./mconfig -p /usr/local
             make -j$(nproc) -C ./builddir all
 
+  go1.11-alpine:
+    <<: *defaults
+    docker:
+      - image: sylabsio/golang:1.11-alpine
+    steps:
+      - attach_workspace:
+          at: /go
+      - run:
+          name: Build Singularity
+          command: |-
+            ./mconfig -p /usr/local
+            make -j$(nproc) -C ./builddir all
+
   go1.11-stretch:
     <<: *defaults
     docker:
@@ -59,20 +72,7 @@ jobs:
           paths:
             - src/github.com/sylabs/singularity
 
-  go1.11-alpine:
-    <<: *defaults
-    docker:
-      - image: sylabsio/golang:1.11-alpine
-    steps:
-      - attach_workspace:
-          at: /go
-      - run:
-          name: Build Singularity
-          command: |-
-            ./mconfig -p /usr/local
-            make -j$(nproc) -C ./builddir all
-
-  runtime_test:
+  singularity_tests:
     machine: true
     steps:
       - attach_workspace:
@@ -136,13 +136,11 @@ jobs:
           name: update and get libs
           working_directory: /tmp
           command: |-
-            sudo apt-get update -y && sudo apt-get install -y build-essential libssl-dev uuid-dev libgpgme11-dev squashfs-tools libseccomp-dev
+            sudo apt-get update && sudo apt-get install -y squashfs-tools
       - run:
-          name: build & install singularity
+          name: install singularity
           command: |-
             cd $HOME/go/src/github.com/sylabs/singularity
-            ./mconfig -p /usr/local
-            make -j `nproc 2>/dev/null || echo 1` -C ./builddir all
             sudo make -C ./builddir install
       - run:
           name: test singularity
@@ -166,4 +164,4 @@ workflows:
             - get_source
       - runtime_test:
           requires:
-            - get_source
+            - go1.11-stretch
