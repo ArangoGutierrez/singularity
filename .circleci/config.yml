@@ -85,7 +85,7 @@ jobs:
             echo 'export  GOBIN=$HOME/go/bin' >> $BASH_ENV
             echo 'export  GOCACHE=off' >> $BASH_ENV
             echo 'export PATH=$GOPATH/bin:$GOBIN:$GOROOT/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin' >> $BASH_ENV
-      - run: find /home/circleci/go/bin -type f -exec md5sum "{}" + > /home/circleci/project/go_deps_checksum.list
+      - run: mkdir -p $HOME/go/bin && find /home/circleci/go/bin -type f -exec md5sum "{}" + > /home/circleci/project/go_deps_checksum.list
       - restore_cache:
           key: go-deps-{{ checksum "go_deps_checksum.list" }}
           paths:
@@ -94,7 +94,6 @@ jobs:
           name: fetch deps
           command: |-
             if [ ! -d bin ]; then
-              mkdir -p ${GOBIN}
               curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
               go get -u golang.org/x/lint/golint
               find /home/circleci/go/bin -type f -exec md5sum "{}" + > /home/circleci/project/go_deps_checksum.list
