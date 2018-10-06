@@ -42,6 +42,25 @@ jobs:
             ./mconfig -p /usr/local
             make -j$(nproc) -C ./builddir all
 
+  go1.11-stretch:
+    <<: *defaults
+    docker:
+      - image: sylabsio/golang:1.11-stretch
+    steps:
+      - attach_workspace:
+          at: /go
+      - run:
+          name: Build Singularity
+          command: |-
+            ./mconfig -p /usr/local
+            make -j$(nproc) -C ./builddir all
+      - run:
+          name: check code
+          command: |-
+            go get -u golang.org/x/lint/golint
+            make -j$(nproc) -C ./builddir check
+
+
   go1.11-alpine:
     <<: *defaults
     docker:
@@ -54,25 +73,15 @@ jobs:
           command: |-
             ./mconfig -p /usr/local
             make -j$(nproc) -C ./builddir all
-
-  go1.11-stretch:
-    <<: *defaults
-    docker:
-      - image: sylabsio/golang:1.11-stretch
-    steps:
-      - attach_workspace:
-          at: /go
+            go get -u golang.org/x/lint/golint
+            make -j$(nproc) -C ./builddir check
       - run:
-          name: Build Singularity
+          name: check code
           command: |-
-            ./mconfig -p /sroot
-            make -j$(nproc) -C ./builddir all
-      - persist_to_workspace:
-          root: /go
-          paths:
-            - src/github.com/sylabs/singularity
+            go get -u golang.org/x/lint/golint
+            make -j$(nproc) -C ./builddir check
 
-  singularity_tests:
+  singularity_test:
     machine: true
     steps:
       - attach_workspace:
@@ -86,30 +95,26 @@ jobs:
             echo 'export  GOCACHE=off' >> $BASH_ENV
             echo 'export PATH=$GOPATH/bin:$GOBIN:$GOROOT/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin' >> $BASH_ENV
       - run:
-          name: fetch go deps
-          command: |-
-            if [ ! -d /home/circleci/go/bin ]; then
-              mkdir -p $HOME/go/bin
-            fi
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-            go get -u golang.org/x/lint/golint
-      - run:
-          name: Update Go to 1.11.1 #CircleCi default Go version 1.9
-          command: |-
-              cd /tmp && wget https://dl.google.com/go/go1.11.1.linux-amd64.tar.gz
-              sudo rm -rf /usr/local/go # Clean a previous version
-              sudo tar -C /usr/local -xzf go1.11.1.linux-amd64.tar.gz
-              sudo chown -R circleci:circleci ~/go
-              find /usr/local/go -type f -exec md5sum "{}" + > /home/circleci/project/go_bin_checksum.list
-      - run:
-          name: update and get libs
+          name: Update Go to 1.11
           working_directory: /tmp
           command: |-
-            sudo apt-get update && sudo apt-get install -y build-essential libssl-dev uuid-dev libgpgme11-dev squashfs-tools libseccomp-dev
+            wget https://dl.google.com/go/go1.11.linux-amd64.tar.gz
+            sudo rm -rf /usr/local/go
+            sudo tar -C /usr/local -xzf go1.11.linux-amd64.tar.gz
+            sudo chown -R circleci:circleci ~/go
       - run:
-          name: install singularity
+          name: fetch deps
+          working_directory: /tmp
+          command: |-
+            mkdir -p ${GOBIN}
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            sudo apt-get update -y && sudo apt-get install -y build-essential libssl-dev uuid-dev libgpgme11-dev squashfs-tools libseccomp-dev
+      - run:
+          name: build & install singularity
           command: |-
             cd $HOME/go/src/github.com/sylabs/singularity
+            ./mconfig -p /usr/local
+            make -j$(nproc) -C ./builddir all
             sudo make -C ./builddir install
       - run:
           name: test singularity
@@ -131,6 +136,6 @@ workflows:
       - go1.11-alpine:
           requires:
             - get_source
-      - singularity_tests:
+      - singularity_test:
           requires:
-            - go1.11-stretch
+            - get_source
