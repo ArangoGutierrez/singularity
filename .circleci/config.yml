@@ -86,52 +86,21 @@ jobs:
             echo 'export  GOCACHE=off' >> $BASH_ENV
             echo 'export PATH=$GOPATH/bin:$GOBIN:$GOROOT/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin' >> $BASH_ENV
       - run:
-          name: check for GOBIN folder
+          name: fetch go deps
           command: |-
             if [ ! -d /home/circleci/go/bin ]; then
               mkdir -p $HOME/go/bin
-              find /home/circleci/go/bin -type f -exec md5sum "{}" + > /home/circleci/project/go_deps_checksum.list
             fi
-      - restore_cache:
-          key: go-deps-{{ checksum "go_deps_checksum.list" }}
-          paths:
-            - /home/circleci/go/bin
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            go get -u golang.org/x/lint/golint
       - run:
-          name: fetch deps
+          name: Update Go to 1.11.1 #CircleCi default Go version 1.9
           command: |-
-            if [ ! -d bin ]; then
-              curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-              go get -u golang.org/x/lint/golint
-              find /home/circleci/go/bin -type f -exec md5sum "{}" + > /home/circleci/project/go_deps_checksum.list
-            fi
-      - save_cache:
-          key: go-deps-{{ checksum "go_deps_checksum.list" }}
-          paths:
-            - /home/circleci/go/bin
-      - run:
-          name: check for GOROOT folder
-          command: |-
-            if [ -d /home/circleci/go/bin ]; then
-              find /usr/local/go -type f -exec md5sum "{}" + > /home/circleci/project/go_bin_checksum.list
-            fi
-      - restore_cache:
-          key: go-bin-{{ checksum "go_bin_checksum.list" }}
-          paths:
-            - /usr/local/go
-      - run:
-          name: Update Go to 1.11 #CircleCi default Go version 1.9
-          command: |-
-            if [ ! -d go ]; then
-              cd /tmp && wget https://dl.google.com/go/go1.11.linux-amd64.tar.gz
+              cd /tmp && wget https://dl.google.com/go/go1.11.1.linux-amd64.tar.gz
               sudo rm -rf /usr/local/go # Clean a previous version
-              sudo tar -C /usr/local -xzf go1.11.linux-amd64.tar.gz
+              sudo tar -C /usr/local -xzf go1.11.1.linux-amd64.tar.gz
               sudo chown -R circleci:circleci ~/go
               find /usr/local/go -type f -exec md5sum "{}" + > /home/circleci/project/go_bin_checksum.list
-            fi
-      - save_cache:
-          key: go-bin-{{ checksum "go_bin_checksum.list" }}
-          paths:
-            - /usr/local/go
       - run:
           name: update and get libs
           working_directory: /tmp
@@ -139,13 +108,12 @@ jobs:
             sudo apt-get update && sudo apt-get install -y squashfs-tools
       - run:
           name: install singularity
+          working_directory: $HOME/go/src/github.com/sylabs/singularity
           command: |-
-            cd $HOME/go/src/github.com/sylabs/singularity
             sudo make -C ./builddir install
       - run:
           name: test singularity
           command: |-
-            cd $HOME/go/src/github.com/sylabs/singularity
             make -C ./builddir test
 
 workflows:
