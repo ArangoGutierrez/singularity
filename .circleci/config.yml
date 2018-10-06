@@ -88,10 +88,10 @@ jobs:
       - run:
           name: check for GOBIN folder
           command: |-
-          if [ ! -d /home/circleci/go/bin ]; then
-            mkdir -p $HOME/go/bin
-            find /home/circleci/go/bin -type f -exec md5sum "{}" + > /home/circleci/project/go_deps_checksum.list
-          fi
+            if [ ! -d /home/circleci/go/bin ]; then
+              mkdir -p $HOME/go/bin
+              find /home/circleci/go/bin -type f -exec md5sum "{}" + > /home/circleci/project/go_deps_checksum.list
+            fi
       - restore_cache:
           key: go-deps-{{ checksum "go_deps_checksum.list" }}
           paths:
@@ -111,9 +111,9 @@ jobs:
       - run:
           name: check for GOROOT folder
           command: |-
-          if [ -d /home/circleci/go/bin ]; then
-            find /usr/local/go -type f -exec md5sum "{}" + > /home/circleci/project/go_bin_checksum.list
-          fi
+            if [ -d /home/circleci/go/bin ]; then
+              find /usr/local/go -type f -exec md5sum "{}" + > /home/circleci/project/go_bin_checksum.list
+            fi
       - restore_cache:
           key: go-bin-{{ checksum "go_bin_checksum.list" }}
           paths:
