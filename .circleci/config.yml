@@ -85,6 +85,7 @@ jobs:
             echo 'export  GOBIN=$HOME/go/bin' >> $BASH_ENV
             echo 'export  GOCACHE=off' >> $BASH_ENV
             echo 'export PATH=$GOPATH/bin:$GOBIN:$GOROOT/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin' >> $BASH_ENV
+      - run: find /home/circleci/go/bin -type f -exec md5sum "{}" + > /home/circleci/project/go_deps_checksum.list
       - restore_cache:
           key: go-deps-{{ checksum "go_deps_checksum.list" }}
           paths:
@@ -102,6 +103,7 @@ jobs:
           key: dep-cache-{{ checksum "go_deps_checksum.list" }}
           paths:
             - /home/circleci/go/bin
+      - run: find /usr/local/go -type f -exec md5sum "{}" + > /home/circleci/project/go_bin_checksum.list
       - restore_cache:
           key: go-bin-{{ checksum "go_bin_checksum.list" }}
           paths:
