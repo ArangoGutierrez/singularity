@@ -108,12 +108,13 @@ jobs:
             sudo apt-get update && sudo apt-get install -y squashfs-tools
       - run:
           name: install singularity
-          working_directory: $HOME/go/src/github.com/sylabs/singularity
           command: |-
+            cd $HOME/go/src/github.com/sylabs/singularity
             sudo make -C ./builddir install
       - run:
           name: test singularity
           command: |-
+            cd $HOME/go/src/github.com/sylabs/singularity
             make -C ./builddir test
 
 workflows:
