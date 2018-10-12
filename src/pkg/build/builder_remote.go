@@ -20,9 +20,13 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sylabs/singularity/src/pkg/build/types"
 	"github.com/sylabs/singularity/src/pkg/client/library"
+	"github.com/sylabs/singularity/src/pkg/jsonresp"
 	"github.com/sylabs/singularity/src/pkg/sylog"
 	"github.com/sylabs/singularity/src/pkg/util/user-agent"
 )
+
+// CloudURI holds the URI of the Library web front-end.
+const CloudURI = "https://cloud.sylabs.io"
 
 // RemoteBuilder contains the build request and response
 type RemoteBuilder struct {
@@ -43,7 +47,7 @@ func (rb *RemoteBuilder) setAuthHeader(h http.Header) {
 }
 
 // NewRemoteBuilder creates a RemoteBuilder with the specified details.
-func NewRemoteBuilder(imagePath, libraryURL string, d types.Definition, isDetached bool, builderAddr, authToken string) (rb *RemoteBuilder, err error) {
+func NewRemoteBuilder(imagePath, libraryURL string, d types.Definition, isDetached, force bool, builderAddr, authToken string) (rb *RemoteBuilder, err error) {
 	builderURL, err := url.Parse(builderAddr)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse builder address")
@@ -54,6 +58,7 @@ func NewRemoteBuilder(imagePath, libraryURL string, d types.Definition, isDetach
 			Timeout: 30 * time.Second,
 		},
 		ImagePath:  imagePath,
+		Force:      force,
 		LibraryURL: libraryURL,
 		Definition: d,
 		IsDetached: isDetached,
@@ -86,7 +91,7 @@ func (rb *RemoteBuilder) Build(ctx context.Context) (err error) {
 	if rb.IsDetached {
 		fmt.Printf("Build submitted! Once it is complete, the image can be retrieved by running:\n")
 		fmt.Printf("\tsingularity pull --library %v library://%v\n\n", rd.LibraryURL, libraryRefRaw)
-		fmt.Printf("Alternatively, you can access it from a browser at:\n\t%v/library/%v\n", rd.LibraryURL, libraryRefRaw)
+		fmt.Printf("Alternatively, you can access it from a browser at:\n\t%v/library/%v\n", CloudURI, libraryRefRaw)
 	}
 
 	// If we're doing an attached build, stream output and then download the resulting file
@@ -191,12 +196,7 @@ func (rb *RemoteBuilder) doBuildRequest(ctx context.Context, d types.Definition,
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusCreated {
-		err = errors.New(res.Status)
-		return
-	}
-
-	err = json.NewDecoder(res.Body).Decode(&rd)
+	err = jsonresp.ReadResponse(res.Body, &rd)
 	return
 }
 
@@ -216,11 +216,6 @@ func (rb *RemoteBuilder) doStatusRequest(ctx context.Context, id bson.ObjectId) 
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		err = errors.New(res.Status)
-		return
-	}
-
-	err = json.NewDecoder(res.Body).Decode(&rd)
+	err = jsonresp.ReadResponse(res.Body, &rd)
 	return
 }
