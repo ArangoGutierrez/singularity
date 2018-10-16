@@ -3,7 +3,6 @@
 sh -c '
   set -x
   sudo chown testuser /build
-  cd /build
   ./mconfig -V 0.0
   sudo yum-builddep -y dist/rpm/singularity.spec
   dist/rpm/buildrpm
