@@ -17,8 +17,6 @@ if [[ "$OS_TYPE" = "centos" ]] && [[ "$OS_VERSION" = "6" ]]; then
     docker run --privileged -ti -e "container=docker" -v /var/run/docker.sock:/docker.sock \
       --network=host -v "$(pwd):/build:rw"  --name "$DOCKER_CONTAINER_NAME" \
       "$DOCKER_HUB_URI" /bin/bash -exc "
-    export DOCKER_HOST=unix:///docker.sock
-    chmod o+rw /docker.sock &&
     cd /build &&
     .circleci/build_test $OS_TYPE $OS_VERSION
 "
@@ -27,8 +25,6 @@ elif [[ "$OS_TYPE" = "centos" ]] && [[ "$OS_VERSION" = "7" ]]; then
       --network=host -v /sys/fs/cgroup:/sys/fs/cgroup -v "$(pwd):/build:rw"  --name "$DOCKER_CONTAINER_NAME" \
       "$DOCKER_HUB_URI" /usr/sbin/init
     docker exec -ti "$DOCKER_CONTAINER_NAME" /bin/bash -exc "
-    export DOCKER_HOST=unix:///docker.sock
-    chmod o+rw /docker.sock &&
     cd /build &&
     .circleci/build_test $OS_TYPE $OS_VERSION
 "
@@ -36,8 +32,6 @@ else
     docker run --privileged -ti -e "container=docker" -v /var/run/docker.sock:/docker.sock \
       --network=host -v "$(pwd):/build:rw"  --name "$DOCKER_CONTAINER_NAME" \
       "$DOCKER_HUB_URI" /bin/bash -exc "
-    export DOCKER_HOST=unix:///docker.sock
-    chmod o+rw /docker.sock &&
     cd /build &&
     .circleci/build_test $OS_TYPE $OS_VERSION
 "
