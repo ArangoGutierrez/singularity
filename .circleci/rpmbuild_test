@@ -1,0 +1,15 @@
+#!/bin/bash -ex
+
+su testuser -c '
+  set -x
+  ./mconfig -V 0.0
+  sudo yum-builddep -y dist/rpm/singularity.spec
+  dist/rpm/buildrpm
+  sudo yum install -y $HOME/rpmbuild/RPMS/*/*.rpm
+  BLD=`echo $HOME/rpmbuild/BUILD/singularity-*`
+  export GOROOT=$BLD/go
+  export GOPATH=$BLD/gopath
+  PATH=$GOROOT/bin:$GOPATH/bin:$PATH
+  cd $GOPATH/src/github.com/sylabs/singularity
+  make -C builddir test
+'
