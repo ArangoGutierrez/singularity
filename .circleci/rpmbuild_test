@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 
-su testuser -c '
+sh -c '
   set -x
   ./mconfig -V 0.0
   sudo yum-builddep -y dist/rpm/singularity.spec
