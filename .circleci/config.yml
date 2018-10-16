@@ -66,7 +66,7 @@ jobs:
             go get -u golang.org/x/lint/golint
             make -j$(nproc) -C ./builddir check
 
-  test_os_trusty:
+  test_OS_trusty:
     machine: true
     steps:
       - attach_workspace:
@@ -107,7 +107,7 @@ jobs:
             cd $HOME/go/src/github.com/sylabs/singularity
             make -C ./builddir test
 
-  test_os_centos6:
+  test_OS_centos6:
     machine: true
     steps:
       - attach_workspace:
@@ -119,10 +119,11 @@ jobs:
             echo 'export  OS_VERSION=6' >> $BASH_ENV
       - run:
           name: test script
+          working_directory: $HOME/go/src/github.com/sylabs/singularity
           command: |-
             sh -c .circleci/script
 
-  test_os_centos7:
+  test_OS_centos7:
     machine: true
     steps:
       - attach_workspace:
@@ -134,6 +135,7 @@ jobs:
             echo 'export  OS_VERSION=7' >> $BASH_ENV
       - run:
           name: test script
+          working_directory: $HOME/go/src/github.com/sylabs/singularity
           command: |-
             sh -c .circleci/script
 
@@ -151,12 +153,12 @@ workflows:
       - go1.11-alpine:
           requires:
             - get_source
-      - test_os_trusty:
+      - test_OS_trusty:
           requires:
             - get_source
-      - test_os_centos6:
+      - test_OS_centos6:
           requires:
             - get_source
-      - test_os_centos7:
+      - test_OS_centos7:
           requires:
             - get_source
