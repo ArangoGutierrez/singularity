@@ -119,8 +119,8 @@ jobs:
             echo 'export  OS_VERSION=6' >> $BASH_ENV
       - run:
           name: test script
-          working_directory: $HOME/go/src/github.com/sylabs/singularity
           command: |-
+            cd $HOME/go/src/github.com/sylabs/singularity
             sh -c .circleci/script
 
   test_OS_centos7:
@@ -135,8 +135,8 @@ jobs:
             echo 'export  OS_VERSION=7' >> $BASH_ENV
       - run:
           name: test script
-          working_directory: $HOME/go/src/github.com/sylabs/singularity
           command: |-
+            cd $HOME/go/src/github.com/sylabs/singularity
             sh -c .circleci/script
 
 workflows:
