@@ -2,7 +2,8 @@
 
 sh -c '
   set -x
-  sudo chown testuser $HOME/go/src/github.com/sylabs/singularity
+  sudo chown testuser /build
+  cd /build
   ./mconfig -V 0.0
   sudo yum-builddep -y dist/rpm/singularity.spec
   dist/rpm/buildrpm
